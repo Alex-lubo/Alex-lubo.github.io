@@ -156,6 +156,145 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-learn-python-excellent-materials" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/21/learn-python-excellent-materials/">learn python - excellent materials.md</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/21/learn-python-excellent-materials/" class="archive-article-date">
+  	<time datetime="2017-11-21T14:51:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>You can get a lot of learing materials about python. The list belowing contains the resource that pull over me a lot, so i note them for mem.</p>
+<ul>
+<li>CS231n课程笔记翻译：Python Numpy教程: <a href="https://zhuanlan.zhihu.com/p/20878530" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/20878530</a></li>
+</ul>
+<p>按理说运行下面一句就可以安装了<br><code>pip install matplotlib</code><br>但是对于我的redhat7.2+python2.7.5，报了下面的错误</p>
+<blockquote>
+<p>_posixsubprocess.c:3:20: 致命错误：Python.h：没有那个文件或目录</p>
+</blockquote>
+<p>于是需要先安装python-devel</p>
+<p><code>sudo yum install python-devel</code></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/21/learn-python-excellent-materials/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS7-upgrade-glibc" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/CentOS7-upgrade-glibc/">CentOS7 upgrade glibc</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/16/CentOS7-upgrade-glibc/" class="archive-article-date">
+  	<time datetime="2017-11-16T14:53:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。<br>通过以下命令查询本机已经安装版本：<br><code>rpm -qa | grep glibc</code><br>可以看到本机安装版本为：</p>
+<blockquote>
+<p>glibc-2.17-196.el7_3.1.x86_64<br>glibc-devel-2.17-196.el7_3.1.x86_64<br>glibc-headers-2.17-196.el7_3.1.x86_64<br>glibc-common-2.17-196.el7_3.1.x86_64</p>
+</blockquote>
+<p>得知系统中安装了 x86_64 的 glibc、glibc-common、glibc-devel、glibc-headers，并且版本是 2.17-192.el7_3，所以升级时我们要下载新版本的以上 4 种 RPM 包。接下来，可以在 ftp.redsleeve.org、rpmfind.net(x86_64) 或百毒云下载相应版本的 RPM 包，注意只能用在 el7 发行版中.<br>然后将安装包放置在某文件夹下，输入以下命令：<br><code>sudo rpm -Uvh glibc-*</code><br>即可完成更新，然后update下系统，就可以更新系统了。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/16/CentOS7-upgrade-glibc/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Mechine-Learning-prepare" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -180,7 +319,7 @@
 <ol>
 <li>将人类的认知和思考能力“教”给机器，就像让机器替代人类从是繁重的体力劳动一样，这是算是“第二次机器革命”。机器学习是未来的一个方向，而且很有兴趣；</li>
 <li>自身有一定的数学基础和编程基础；</li>
-<li>上班离家太远，准备换工作了；</li>
+<li>挑战一下自己，给自己压力，借着学习的机会加强自己的自学能力和自制能力；</li>
 </ol>
 <p>之前零散的看过一些机器学习的概念，结合自身工作学习经历，尤其是研究生期间毕业论文就是做的采用人工神经网络来自动识别油水层，而且之前也做过HARI阵列成像测井仪器测井资料的正反演，采用的阻尼最小二乘法做的，通过计算模型计算值与实际测量值之间最小误差来确定最佳模型，然后根据模型给出地层模型，以方便测井解释人员对资料进行解释；有这些经历，然后通过一段实践的自学，进阶机器学习是不成问题的。</p>
 <p>个人理解，所有的知识都是在大脑中与外在世界形成的映射关系，学习的过程则是建立这种映射关系的过程，比如我们知道一支笔的样子，然后大脑会记住它的特征，当下次再看到时根据之前的映射关系知道它是一支笔…</p>
@@ -534,7 +673,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2017 alex lu
+    		&copy; 2018 alex lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

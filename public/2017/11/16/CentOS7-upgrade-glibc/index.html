@@ -6,15 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://alex-lubo.github.io/lubo.github.io">
-  <title>Archives: 2017/11 | alex-lu&#39;s blog</title>
+  <title>CentOS7 upgrade glibc | alex-lu&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="alex-lu&#39;s blog">
-<meta property="og:url" content="http://alex-lubo.github.io/lubo.github.io/archives/2017/11/index.html">
+  <meta name="description" content="最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。通过以下命令查询本机已经安装版本：rpm -qa | grep glibc可以看到本机安装版本为：  glibc-2.17-196.el7_3.1.x86_64glibc-devel-2.17-196.el7_3.1.x86_64glibc-headers-2.17-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS7 upgrade glibc">
+<meta property="og:url" content="http://alex-lubo.github.io/lubo.github.io/2017/11/16/CentOS7-upgrade-glibc/index.html">
 <meta property="og:site_name" content="alex-lu&#39;s blog">
+<meta property="og:description" content="最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。通过以下命令查询本机已经安装版本：rpm -qa | grep glibc可以看到本机安装版本为：  glibc-2.17-196.el7_3.1.x86_64glibc-devel-2.17-196.el7_3.1.x86_64glibc-headers-2.17-">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2017-11-16T15:05:53.140Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="alex-lu&#39;s blog">
+<meta name="twitter:title" content="CentOS7 upgrade glibc">
+<meta name="twitter:description" content="最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。通过以下命令查询本机已经安装版本：rpm -qa | grep glibc可以看到本机安装版本为：  glibc-2.17-196.el7_3.1.x86_64glibc-devel-2.17-196.el7_3.1.x86_64glibc-headers-2.17-">
   
     <link rel="alternative" href="/atom.xml" title="alex-lu&#39;s blog" type="application/atom+xml">
   
@@ -154,195 +158,169 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-CentOS7-upgrade-glibc" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/21/learn-python-excellent-materials/" class="archive-article-date">
-  	<time datetime="2017-11-21T14:51:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-21</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/21/learn-python-excellent-materials/">learn python - excellent materials.md</a>
+    <h1 class="article-title" itemprop="name">
+      CentOS7 upgrade glibc
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/16/CentOS7-upgrade-glibc/" class="archive-article-date">
+        
+        <a href="/2017/11/16/CentOS7-upgrade-glibc/" class="archive-article-date">
   	<time datetime="2017-11-16T14:53:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-16</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/16/CentOS7-upgrade-glibc/">CentOS7 upgrade glibc</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。<br>通过以下命令查询本机已经安装版本：<br><code>rpm -qa | grep glibc</code><br>可以看到本机安装版本为：</p>
+<blockquote>
+<p>glibc-2.17-196.el7_3.1.x86_64<br>glibc-devel-2.17-196.el7_3.1.x86_64<br>glibc-headers-2.17-196.el7_3.1.x86_64<br>glibc-common-2.17-196.el7_3.1.x86_64</p>
+</blockquote>
+<p>得知系统中安装了 x86_64 的 glibc、glibc-common、glibc-devel、glibc-headers，并且版本是 2.17-192.el7_3，所以升级时我们要下载新版本的以上 4 种 RPM 包。接下来，可以在 ftp.redsleeve.org、rpmfind.net(x86_64) 或百毒云下载相应版本的 RPM 包，注意只能用在 el7 发行版中.<br>然后将安装包放置在某文件夹下，输入以下命令：<br><code>sudo rpm -Uvh glibc-*</code><br>即可完成更新，然后update下系统，就可以更新系统了。</p>
 
-        <div class="article-info info-on-right">
-          
-          
+      
 
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://alex-lubo.github.io/lubo.github.io/2017/11/16/CentOS7-upgrade-glibc/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/08/Mechine-Learning-prepare/" class="archive-article-date">
-  	<time datetime="2017-11-08T15:30:14.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-08</time>
-</a>
+<nav id="article-nav">
+  
+    <a href="/2017/11/21/learn-python-excellent-materials/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          learn python - excellent materials.md
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/11/08/Mechine-Learning-prepare/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Mechine Learning - prepare</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/08/Mechine-Learning-prepare/">Mechine Learning - prepare</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/08/CentOS-7-安装NTFS支持/" class="archive-article-date">
-  	<time datetime="2017-11-08T15:24:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-08</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/08/CentOS-7-安装NTFS支持/">CentOS 7 安装NTFS支持</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/04/CentOS-7-安装NVIDIA驱动/" class="archive-article-date">
-  	<time datetime="2017-11-04T14:33:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-04</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/04/CentOS-7-安装NVIDIA驱动/">CentOS 7 安装NVIDIA驱动</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/11/04/hello-world/" class="archive-article-date">
-  	<time datetime="2017-11-04T05:53:01.367Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-04</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/11/04/hello-world/">Hello World</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-    
 
 
           </div>
@@ -365,8 +343,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
