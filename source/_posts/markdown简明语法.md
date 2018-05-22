@@ -204,6 +204,7 @@ pipe    | $1    | dlp
 
 5. 公式
 
+**方法1**
 参考[这篇文章](https://magicly.me/markdown-math/)。
 简单办法，首先上这个[在线工具](https://webdemo.myscript.com/views/math.html#)，手写公示，然后它会转成LaTex!,然后放置在需要的位置就可以了。
 放置方法
@@ -211,3 +212,13 @@ pipe    | $1    | dlp
 
 效果：
 > $$ H\left(x ,y\right) =\sum ^{M-1}_{i=0}\sum ^{M-1}_{j=0}I\left( x+i-a_{i},y+j-a_{j}\right) G\left( i,j\right) $$
+
+**方法2**
+直接上这个[在线编辑LaTex的工具](https://www.codecogs.com/latex/eqneditor.php),编辑需要的公式（类似ms公式编辑器，很好用）。直接复制生成html到md文件中即可。
+```
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x&plus;i-a_{_{i}},&space;y&plus;i-a_{_{j}})G(i,j)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x&plus;i-a_{_{i}},&space;y&plus;i-a_{_{j}})G(i,j)" title="\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x+i-a_{_{i}}, y+i-a_{_{j}})G(i,j)" /></a>
+```
+
+效果：
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x&plus;i-a_{_{i}},&space;y&plus;i-a_{_{j}})G(i,j)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x&plus;i-a_{_{i}},&space;y&plus;i-a_{_{j}})G(i,j)" title="\sum_{i=0}^{M-1}\sum_{j}^{M-1}I(x+i-a_{_{i}}, y+i-a_{_{j}})G(i,j)" /></a>
+
