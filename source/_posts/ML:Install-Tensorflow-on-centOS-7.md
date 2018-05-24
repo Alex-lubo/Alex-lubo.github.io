@@ -1,15 +1,16 @@
 ---
-title: ML(1): Install Tensorflow on centOS 7
+title: Install Tensorflow on centOS 7(ML-1)
 date: 2018-03-29 22:40:36
 tags:
 ---
 
-准备动手实践以下机器学习的东西，感觉书看得再多如果不实践，感觉有两个问题：1, 数学太抽象，学起来其实很费力；2， 许多书上的模型算起来很理想，但是实际工作中算法如何落地，和理论模型还是很有差距的。所以为了提高学习的效率，以[google的机器学习教程](https://developers.google.com/machine-learning/crash-course/prereqs-and-prework?hl=zh-cn)为基础，察缺补漏，提高对机器学习的理解和实践能力。
+准备动手实践机器学习的东西，目前也看了许多机器学习相关的书，感觉书看得再多没有实践的检验，怕自己的理解或许会出问题。
+1, 数学太抽象，如果没有实践，你也很容易就忘记了，所以目的一就是通过实践加深理解和记忆；2， 许多书为了让人理解，数据和模型参数都会选的很简单的，真正的工作中数据的维数、数量的复杂度会远远比书上难， 所以需要编程实践区掌握这写算法，让算法落地。‘纸上得来终觉浅，须知此事要躬行’。所以为了提高学习的效率，以[google的机器学习教程](https://developers.google.com/machine-learning/crash-course/prereqs-and-prework?hl=zh-cn)为基础，察缺补漏，提高对机器学习的理解和实践能力。
 
 ML这些文章记录下自己的学习过程。
 按照教程的前提条件和准备工作对照了一下，初级代数和基本数学知识还是可以的，编程能力吗之前使用的是JS，C++,C#，python偶尔使用。所以直接开始还是没有问题的。
 那么问题来了，要实践，首先需要有环境吧。 so ...
-首先，搭建环境。自己的笔记本上是CentOS7，直接就在Centos上开干吧。
+首先，搭建环境。自己的笔记本上是CentOS7系统，直接就在Centos上开始吧。
 机器配置有独显，看下配置：
 ```
 ～ lspci |grep -i vga
@@ -99,7 +100,10 @@ $ pip uninstall tensorflow
 $ pip install tensorflow==1.5
 ```
 done!
-实际上即便是1.5的版本，tensorflow可以执行，但是warnning：Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2
+实际上即便是1.5的版本，tensorflow可以执行，但是warnning：
+```
+Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2
+```
 可以手动编译可以根据自己机器的匹配进行配置，提高tensorflow的效率，后面再仔细研究以下tensorflow的编译吧。目前的任务是学习tensorflow来解决数学问题。
 4. 然后就可以开始使用tensorflow进行机器学习的相关开发啦。
 
@@ -107,7 +111,7 @@ done!
 
 
 补充介绍：
- [virtualenv]python中的第三方包，用来管理python虚拟环境的的方法之一，它通过创建虚拟而独立的python环境，使每个项目的环境与其他项目环境独立开来，保证各自环境的干净，避免包冲突的问题。
+* [virtualenv]python中的第三方包，用来管理python虚拟环境的的方法之一，它通过创建虚拟而独立的python环境，使每个项目的环境与其他项目环境独立开来，保证各自环境的干净，避免包冲突的问题。
 ```
 // create virtual env
 $ virtualenv targetDir                              //targetDir 虚拟环境名称
@@ -118,5 +122,3 @@ $ source bin/activate                               //启动虚拟环境
 $ deactivate                                        //退出虚拟环境
 $ cd .. & rm targetDir                              //删除虚拟环境
 ```
-
-[]
