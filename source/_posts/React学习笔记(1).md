@@ -192,14 +192,14 @@ function Welcome(props) {
 React 标榜自己是 MVC 里面 V 的部分，那么 Flux 就相当于添加 M 和 C 的部分。
 Flux 是 Facebook 使用的一套前端应用的架构模式。
 一个 Flux 应用主要包含四个部分：
++ the actions
+> 提供给 dispatcher 传递数据给 store
 + the dispatcher
 > 处理动作分发，维护 Store 之间的依赖关系
 + the stores
-> 数据和逻辑部分
+> 数据和逻辑部分.一个应用只能有一个store。
 + the views
 > React 组件，这一层可以看作 controller-views，作为视图同时响应用户交互
-+ the actions
-> 提供给 dispatcher 传递数据给 store
 
 Flux 的核心“单向数据流“怎么运作的：
 ```
