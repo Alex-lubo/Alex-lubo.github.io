@@ -16,7 +16,7 @@ tags:
 
 ##### 闵可夫斯基距离
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=d(x,y)=(\sum_{k=1}^{n}\left&space;|&space;x_{k}-y_{k}&space;\right&space;|^{r})^{\frac{1}{r}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?d(x,y)=(\sum_{k=1}^{n}\left&space;|&space;x_{k}-y_{k}&space;\right&space;|^{r})^{\frac{1}{r}}" title="d(x,y)=(\sum_{k=1}^{n}\left | x_{k}-y_{k} \right |^{r})^{\frac{1}{r}}" /></a> (1)
+<a><img src="https://latex.codecogs.com/gif.latex?d(x,y)=(\sum_{k=1}^{n}\left&space;|&space;x_{k}-y_{k}&space;\right&space;|^{r})^{\frac{1}{r}}" title="d(x,y)=(\sum_{k=1}^{n}\left | x_{k}-y_{k} \right |^{r})^{\frac{1}{r}}" /></a> (1)
 
 实际应用:
 
@@ -30,22 +30,22 @@ tags:
 
 ##### pearson相关系数
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=r=\frac{\sum_{i=1}^{n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{\sqrt{\sum_{i=1}^{n}(x_{i}-\bar{x}){}^{2}}\sqrt{\sum_{i=1}^{n}(y_{i}-\bar{y}){}^{2}}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?r=\frac{\sum_{i=1}^{n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{\sqrt{\sum_{i=1}^{n}(x_{i}-\bar{x}){}^{2}}\sqrt{\sum_{i=1}^{n}(y_{i}-\bar{y}){}^{2}}}" title="r=\frac{\sum_{i=1}^{n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{\sqrt{\sum_{i=1}^{n}(x_{i}-\bar{x}){}^{2}}\sqrt{\sum_{i=1}^{n}(y_{i}-\bar{y}){}^{2}}}" /></a>    (2)
+<a><img src="https://latex.codecogs.com/gif.latex?r=\frac{\sum_{i=1}^{n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{\sqrt{\sum_{i=1}^{n}(x_{i}-\bar{x}){}^{2}}\sqrt{\sum_{i=1}^{n}(y_{i}-\bar{y}){}^{2}}}" title="r=\frac{\sum_{i=1}^{n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{\sqrt{\sum_{i=1}^{n}(x_{i}-\bar{x}){}^{2}}\sqrt{\sum_{i=1}^{n}(y_{i}-\bar{y}){}^{2}}}" /></a>    (2)
 
 尔逊相关系数用于衡量两个变量之间的相关性。如果r=1表示完全相关
 上面的公式，在实际计算时必须对数据做多次遍历。可以使用另外一个公式来计算pearson系数的近似值。
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=r=\frac{\sum_{i=1}^{n}x_{i}y_{i}-\frac{\sum_{i=1}^{n}x_{i}\sum_{i=1}^{n}y_{i}}{n}}{\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?r=\frac{\sum_{i=1}^{n}x_{i}y_{i}-\frac{\sum_{i=1}^{n}x_{i}\sum_{i=1}^{n}y_{i}}{n}}{\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}}" title="r=\frac{\sum_{i=1}^{n}x_{i}y_{i}-\frac{\sum_{i=1}^{n}x_{i}\sum_{i=1}^{n}y_{i}}{n}}{\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}}" /></a>  (3)
+<a><img src="https://latex.codecogs.com/gif.latex?r=\frac{\sum_{i=1}^{n}x_{i}y_{i}-\frac{\sum_{i=1}^{n}x_{i}\sum_{i=1}^{n}y_{i}}{n}}{\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}}" title="r=\frac{\sum_{i=1}^{n}x_{i}y_{i}-\frac{\sum_{i=1}^{n}x_{i}\sum_{i=1}^{n}y_{i}}{n}}{\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}\sqrt{\sum_{i=1}^{n}x_{i}^{2}-\frac{(\sum_{i=1}^{n}x_{i})^{2}}{n}}}" /></a>  (3)
 
 这个公式虽然看起来更加复杂，而且其计算结果会不太稳定，有一定误差存在，但它最大的优点是，用代码实现的时候可以只遍历一次数据
 
 ##### 余弦相似度
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=cos(x,&space;y)=\frac{x\cdot&space;y}{\left&space;\|&space;x&space;\right&space;\|\times&space;\left&space;\|&space;y&space;\right&space;\|}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?cos(x,&space;y)=\frac{x\cdot&space;y}{\left&space;\|&space;x&space;\right&space;\|\times&space;\left&space;\|&space;y&space;\right&space;\|}" title="cos(x, y)=\frac{x\cdot y}{\left \| x \right \|\times \left \| y \right \|}" /></a>   (4)
+<a><img src="https://latex.codecogs.com/gif.latex?cos(x,&space;y)=\frac{x\cdot&space;y}{\left&space;\|&space;x&space;\right&space;\|\times&space;\left&space;\|&space;y&space;\right&space;\|}" title="cos(x, y)=\frac{x\cdot y}{\left \| x \right \|\times \left \| y \right \|}" /></a>   (4)
 
 余弦相似度的计算中会略过这些非零值。为了解决“分数膨胀”的问题，可以采用修正的余弦相似度。就是用户评价中减去其评价的平均值。
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=s(i,j)=\frac{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})(R_{u,j}-\bar{R_{u}})))}{\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?s(i,j)=\frac{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})(R_{u,j}-\bar{R_{u}})))}{\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}}" title="s(i,j)=\frac{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})(R_{u,j}-\bar{R_{u}})))}{\sqrt{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})^{2}}\sqrt{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})^{2}}}" /></a>    (5)
+<a><img src="https://latex.codecogs.com/gif.latex?s(i,j)=\frac{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})(R_{u,j}-\bar{R_{u}})))}{\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}\sqrt{\sum_{u\in&space;U}(R_{u,i}-\bar{R_{u}})^{2}}}" title="s(i,j)=\frac{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})(R_{u,j}-\bar{R_{u}})))}{\sqrt{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})^{2}}\sqrt{\sum_{u\in U}(R_{u,i}-\bar{R_{u}})^{2}}}" /></a>    (5)
 
 ##### 相似度计算方法的选择
     + 如果数据存在“分数膨胀”问题，就使用皮尔逊相关系数
@@ -117,7 +117,7 @@ tags:
     1. 根据用户评价，一般采用修正的余弦相似度公式计算物品的相似度，可以获得一个物品之间相似度的矩阵；
     2. 根据物品相似度，计算用户对某物品可能的评分。如物品A用户未打分，那么结合用户对其他物品的评价，可以计算他对A可能的评分，计算方法采用公式（6）。
     3. 根据预测评分给出推荐内容。
-<a href="https://www.codecogs.com/eqnedit.php?latex=p(u,i)=\frac{\sum_{N\in&space;similarTo(i)}(S_{i,N}\times&space;R_{u,N})}{\sum_{N\in&space;similarTo(i)}(\left&space;|S_{i,N}\right&space;|)}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?p(u,i)=\frac{\sum_{N\in&space;similarTo(i)}(S_{i,N}\times&space;R_{u,N})}{\sum_{N\in&space;similarTo(i)}(\left&space;|S_{i,N}\right&space;|)}" title="p(u,i)=\frac{\sum_{N\in similarTo(i)}(S_{i,N}\times R_{u,N})}{\sum_{N\in similarTo(i)}(\left |S_{i,N}\right |)}" /></a>  (6)
+<a><img src="https://latex.codecogs.com/gif.latex?p(u,i)=\frac{\sum_{N\in&space;similarTo(i)}(S_{i,N}\times&space;R_{u,N})}{\sum_{N\in&space;similarTo(i)}(\left&space;|S_{i,N}\right&space;|)}" title="p(u,i)=\frac{\sum_{N\in similarTo(i)}(S_{i,N}\times R_{u,N})}{\sum_{N\in similarTo(i)}(\left |S_{i,N}\right |)}" /></a>  (6)
 
 其中p(u,i)标示用户u对物品i的评分。N表示用户u打过分的物品集合，Si,N标示物品与N中物品相似度矩阵，Ru,N标示用户u对物品N的评分组成的矩阵。公式的计算效果更佳，对物品的评价分值做标准化处理使之介于-1和1之间。
 

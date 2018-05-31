@@ -127,7 +127,7 @@ function Welcome(props) {
 ```
 # React组件的生命周期
 
-![](https://github.com/Alex-lubo/CodeSnippets/blob/master/graphics/React%20lifecycle.png)
+![](https://github.com/Alex-lubo/CodeSnippets/blob/master/graphics/React%20lifecycle.png?raw=true)
 
 如图，React组件的生命周期包括三个阶段：初始化阶段、运行中阶段和销毁阶段。在不同的生命周期里，会依次触发不同的钩子函数。
 + getDefaultProps
