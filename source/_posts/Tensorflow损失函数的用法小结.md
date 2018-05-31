@@ -92,7 +92,7 @@ TensorFlow针对分类问题，实现了四个交叉熵函数，分别是
 + tf.nn.softmax_cross_entropy_with_logits_v2
 > 为了在多分类任务（label的可能值大于2）中使用交叉熵，就要使用Softmax算法。它是把所有的值用自然指数计算，求和后计算每个值占的比率，保证总和为1。softmax要求每个样本必须属于某个输出类别，并且样本要求覆盖所有的类别。函数会返回C个分量的概率向量，每个分量对应于一个输出类别的概率，如果各分量之和小于1，意味着有一些隐藏的类别，如果分量之和大于1表示每个样本可能属于多个类别。该函数适用于多分类问题。
 > 该问题的输出需要C个，所以与sigmoid_cross_entropy_with_logits方法不同，它需要C个不同的权值组。每组对应一个可能的输出。
-> 类别必须是互斥的，但是概率不是。label的每行表示为属于各类的概率，给类别概率总和为1（或者为onehot encoding）。如果使用互斥标签，即每次只有一个类别为true时，使用sparse_softmax_cross_entropy_with_logits。
+> 类别必须是互斥的，但是概率不是。label的每行表示为属于各类的概率，给类别概率总和为1（或者对类别做onehot encoding）。如果使用互斥标签，即每次只有一个类别为true时，使用sparse_softmax_cross_entropy_with_logits。
 > logits和labels必须为相同的类型和shape，如[batch_size, num_classes]
 > 为避免混淆，需传递命名参数。
 
