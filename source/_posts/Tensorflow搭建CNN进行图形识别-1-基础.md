@@ -17,10 +17,19 @@ tags:
   + depthwise_conv2d
   + separable_conv2d
   + conv2d_transpose
+  + LRN
+    + 效果不好，目前用的少
 + 激活函数:
   + relu
+    + 计算量小，速度快
+    + 在小于0时，梯度无法计算，容易导致神经元“死亡”
+  + 修正relu
   + sigmoid[0.0, 1.0]
+    + 压缩函数，饱和区梯度接近0，容易出现梯度消失
+    + 指数计算量大
+    + 非对称
   + tanh[-1.0, 1.0]
+    + 对称
   + dropout
 + 池化层
   + max_pool
