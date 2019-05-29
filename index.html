@@ -156,6 +156,525 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-第三方c-库编译总结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/05/29/第三方c-库编译总结/">第三方c++库编译总结</a>
+    </h1>
+  
+
+        
+        <a href="/2019/05/29/第三方c-库编译总结/" class="archive-article-date">
+  	<time datetime="2019-05-29T04:33:28.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-29</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近做深度学习部署的工作，采用c++封装tensorflow的深度学习模型，提供图片信息提取的服务。用到了zeromq、log4cplus、boost、jsoncpp、opencv等，在windows上开发测试，然后移植到linux平台下运行。因为target有ubuntu18.04，centos7.2，为了使得编译成功，这些第三方库在目标机器上重新编译。这篇文章记录这些编译过程、碰到的坑以及填坑的方法。<br>编译方式采用cmake，所以需要安装cmake，安装方法请参考官方网站(<a href="https://cmake.org/)的说明或者这篇博客(https://www.linuxidc.com/Linux/2018-09/154165.htm)。" target="_blank" rel="noopener">https://cmake.org/)的说明或者这篇博客(https://www.linuxidc.com/Linux/2018-09/154165.htm)。</a></p>
+<h2 id="zeromq"><a href="#zeromq" class="headerlink" title="zeromq"></a><a href="http://zeromq.org/" target="_blank" rel="noopener">zeromq</a></h2><p>ZeroMQ号称是“史上最快的消息队列”，基于c语言开发的，实时流处理sorm的task之间的通信就是用的zeroMQ。引用官方说法，“ZMQ(以下ZeroMQ简称ZMQ)是一个简单好用的传输层，像框架一样的一个socket library，它使得Socket编程更加简单、简洁和性能更高。是一个消息处理队列库，可在多个线程、内核和主机盒之间弹性伸缩。ZMQ的明确目标是“成为标准网络协议栈的一部分，之后进入Linux内核”。现在还未看到它们的成功。但是，它无疑是极具前景的、并且是人们更加需要的“传统”BSD套接字之上的一层封装。ZMQ让编写高性能网络应用程序极为简单和有趣。确实，它跟RabbitMQ、ActiveMQ之类有着相当本质的区别，ZeroMQ根本就不是一个消息队列服务器，更像是一组底层网络通讯库，对原有的Socket API加上一层封装，是我们操作更简便。使用时只需要引入相应的库文件（jar包）即可。</p>
+<p>安装编译过程如下：<br>首先从 <a href="https://github.com/zeromq/libzmq/releases" target="_blank" rel="noopener">https://github.com/zeromq/libzmq/releases</a> 下载zeromq-4.3.1.tar.gz。然后执行以下操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ tar -zxvf zeromq-4.3.1.tar.gz</span><br><span class="line">$ cd zeromq-4.3.1</span><br><span class="line">$ mkdir build &amp;&amp; cd build</span><br><span class="line">$ cmake -D CMAKE_BUILD_TYPE=Release ..</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure></p>
+<p>需要的lib就在./lib下，静态库为.a文件，动态库为libzmq.so.5.2.1<br>头文件直接复制zeromq-4.3.1下include中的.h文件即可。</p>
+<h2 id="log4cplus"><a href="#log4cplus" class="headerlink" title="log4cplus"></a><a href="https://github.com/log4cplus/log4cplus" target="_blank" rel="noopener">log4cplus</a></h2><p>log4cplus是C++编写的开源的日志库，功能非常全面.<br>从github下载log4cplus的源码，选择release版本下载。<br>然后参考说明中的note一节的内容编译。我使用简单的配置来编译，运行代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ tar log4cplus.tar.gz</span><br><span class="line">$ cd log4cplus</span><br><span class="line">$ ./configure CXXFLAGS=&quot;-std=c++0x&quot;</span><br><span class="line">$ make &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure></p>
+<h2 id="jsoncpp"><a href="#jsoncpp" class="headerlink" title="jsoncpp"></a><a href="https://github.com/open-source-parsers/jsoncpp/releases" target="_blank" rel="noopener">jsoncpp</a></h2><p>JSON全称为JavaScript ObjectNotation，它是一种轻量级的数据交换格式，易于阅读、编写、解析。jsoncpp是c++解析JSON串常用的解析库之一。</p>
+<p>jsoncpp中主要的类：<br>Json::Value：可以表示所有支持的类型，如：int , double ,string , object, array等。其包含节点的类型判断(isNull,isBool,isInt,isArray,isMember,isValidIndex等),类型获取(type),类型转换(asInt,asString等),节点获取(get,[]),节点比较(重载&lt;,&lt;=,&gt;,&gt;=,==,!=),节点操作(compare,swap,removeMember,removeindex,append等)等函数。</p>
+<p>Json::Reader：将文件流或字符串创解析到Json::Value中，主要使用parse函数。Json::Reader的构造函数还允许用户使用特性Features来自定义Json的严格等级。<br>Json::Writer：与JsonReader相反，将Json::Value转换成字符串流等，Writer类是一个纯虚类，并不能直接使用。在此我们使用 Json::Writer 的子类：Json::FastWriter(将数据写入一行,没有格式),Json::StyledWriter(按json格式化输出,易于阅读)。</p>
+<p>Json::Reader可以通过对Json源目标进行解析，得到一个解析好了的Json::Value，通常字符串或者文件输入流可以作为源目标。</p>
+<p>从github下载源码，使用cmake编译。注意1.xx.xx的版本需要编译器支持c++11标准，如果要兼容老的编译器，下载0.xx.xx版本的。</p>
+<h2 id="boost"><a href="#boost" class="headerlink" title="boost"></a>boost</h2><p>Boost库是一个可移植、提供源码的C++库，作为标准库的后备，是C++标准化进程的开发引擎之一。Boost库由C++标准委员会库工作组成员发起，其中有些内容有望成为下一代C++标准库内容。在C++社区中影响甚大，其成员近2000人。Boost库为我们带来了最新、最酷、最实用的技术，是不折不扣的“准”标准库。</p>
+<p>Boost库中较著名库：</p>
+<p>1）Regex，正则表达式库；</p>
+<p>2）Spirit，LL parser framework，用C++代码直接表达EBNF；</p>
+<p>3）Graph，图组件和算法；</p>
+<p>4）Lambda，在调用的地方定义短小匿名的函数对象，很实用的functional功能；</p>
+<p>5）Concept check，检查泛型编程中的concept；</p>
+<p>6）Mpl，用模板实现的原编程框架；</p>
+<p>7）Tread，可移植的C++多线程库；</p>
+<p>8）Python，把C++库和函数映射到Python之中；</p>
+<p>9）Pool，内存池管理；</p>
+<p>10）Smart_ptr，智能指针。</p>
+<p>在官网上下载最新的boost库版本，在此具体版本为<a href="http://www.boost.org/，针对不同操作系统，下载不同的软件包，我下载的是支持linux的最新版本boost-1.70.tar.gz" target="_blank" rel="noopener">http://www.boost.org/，针对不同操作系统，下载不同的软件包，我下载的是支持linux的最新版本boost-1.70.tar.gz</a>.<br>安装过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ tar -zxvf boost-1.70.tar.gz</span><br><span class="line">$ cd boost-1.70</span><br><span class="line">$ ./bootstrap.sh</span><br><span class="line"></span><br><span class="line">// 上步会生成b2和bjam编译程序，b2是bjam的升级版本，二者本质是一样的。接下来使用bjam来编译</span><br><span class="line">$ ./bjam stage cxxflags=-fPIC --toolset=gcc address-model=64 --stagedir=./outputs/bin link=static runtime-link=static threading=multi release</span><br></pre></td></tr></table></figure></p>
+<p>执行完成后在outputs/bin/lib下可以找到编译好的库文件，头文件在boost目录中。</p>
+<p>bjam的参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--build-dir=&lt;builddir&gt; 编译的临时文件会放在builddir里(这样比较好管理，编译完就可以把它删除了)</span><br><span class="line">--stagedir=&lt;stagedir&gt; 存放编译后库文件的路径，默认是stage</span><br><span class="line">--build-type=complete 编译所有版本，不然只会编译一小部分版本（确切地说是相当于:variant=release, threading=multi;link=shared|static;runtime-link=shared）</span><br><span class="line">variant=debug|release 决定编译什么版本(Debug or Release?)</span><br><span class="line">link=static|shared 决定使用静态库还是动态库。</span><br><span class="line">threading=single|multi 决定使用单线程还是多线程库。</span><br><span class="line">runtime-link=static|shared 决定是静态还是动态链接C/C++标准库。</span><br><span class="line">--with-&lt;library&gt; 只编译指定的库，如输入--with-regex就只编译regex库了,默认编译所有库。</span><br><span class="line">--show-libraries 显示需要编译的库名称</span><br></pre></td></tr></table></figure></p>
+<p>因为在编译自己的程序时，编译器报错包含类似如下错误：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">...relocation R_X86_64_32S_against `_ZTVN5boost11regex_errorE` can not be used when making a shared object;recompile with -fPIC...</span><br></pre></td></tr></table></figure></p>
+<p>一番搜索，了解了错误原因：</p>
+<p><em>-fPIC 作用于编译阶段，在编译动态库时(.so文件)告诉编译器产生与位置无关代码(Position-Independent Code)，若未指定-fPIC选项编译.so文件，则在加载动态库时需进行重定向。</em></p>
+<ul>
+<li>如果不加-fPIC,则加载.so文件的代码段时,代码段引用的数据对象需要重定位, 重定位会修改代码段的内容,这就造成每个使用这个.so文件代码段的进程在内核里都会生成这个.so文件代码段的copy.每个copy都不一样,取决于 这个.so文件代码段和数据段内存映射的位置.</li>
+<li>也就是不加fPIC编译出来的so,是要再加载时根据加载到的位置再次重定位的.(因为它里面的代码并不是位置无关代码)<br>如果被多个应用程序共同使用,那么它们必须每个程序维护一份.so的代码副本了.(因为.so被每个程序加载的位置都不同,显然这些重定位后的代码也不同,当然不能共享) </li>
+<li>我们总是用fPIC来生成so,也从来不用fPIC来生成.a;fPIC与动态链接可以说基本没有关系,libc.so一样可以不用fPIC编译,只是这样的so必须要在加载到用户程序的地址空间时重定向所有表目.</li>
+</ul>
+<p>因此在编译时显示加上<code>cxxflags=-fPIC</code>.</p>
+<h2 id="opencv3-4-6"><a href="#opencv3-4-6" class="headerlink" title="opencv3.4.6"></a>opencv3.4.6</h2><p>从 <a href="https://github.com/opencv/opencv/releases" target="_blank" rel="noopener">https://github.com/opencv/opencv/releases</a> 下载源码压缩包。</p>
+<p>然后执行以下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 安装依赖</span><br><span class="line">$ sudo apt-get install build-essential libgtk2.0-dev libavcodec-dev libavformat-dev libjpeg.dev libtiff4.dev libswscale-dev libjasper-dev</span><br><span class="line"></span><br><span class="line">// 解压源码</span><br><span class="line">$ tar -xzvf opencv3.4.6.tar.gz</span><br><span class="line"></span><br><span class="line">// 创建编译目录</span><br><span class="line">$ cd opencv3.4.6</span><br><span class="line">$ mkdir build &amp;&amp; cd build</span><br><span class="line"></span><br><span class="line">// 编译</span><br><span class="line">$ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..</span><br></pre></td></tr></table></figure></p>
+<p>其中如果网络不好会有一个ippicv下载时间长或者下载失败，可考虑手动下载。下载地址：<a href="https://github.com/opencv/opencv_3rdparty/blob/ippicv/master_20180723/ippicv/ippicv_2019_lnx_intel64_general_20180723.tgz" target="_blank" rel="noopener">https://github.com/opencv/opencv_3rdparty/blob/ippicv/master_20180723/ippicv/ippicv_2019_lnx_intel64_general_20180723.tgz</a></p>
+<p>这个安装需要的是ippicv_2019_lnx_intel64_general_20180723.tgz这个包，若终端显示下载其他版本的，在<a href="https://github.com/opencv/opencv_3rdparty/tree/ippicv/master_20180723/ippicv/" target="_blank" rel="noopener">https://github.com/opencv/opencv_3rdparty/tree/ippicv/master_20180723/ippicv/</a> 寻找自己需要的版本。</p>
+<p>下载后无需解压，复制文件的绝对路径(不包含文件名，如/home/xxx/Download/),打开opencv-3.4。6/3rdparty/ippicv/ippicv.cmake文件，定位在47行的url替换自己的本地文件路径，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">41 set(THE_ROOT &quot;$&#123;OpenCV_BINARY_DIR&#125;/3rdparty/ippicv&quot;)</span><br><span class="line">42 ocv_download(FILENAME $&#123;OPENCV_ICV_NAME&#125;</span><br><span class="line">43              HASH $&#123;OPENCV_ICV_HASH&#125;</span><br><span class="line">44              URL</span><br><span class="line">45              &quot;$&#123;OPENCV_IPPICV_URL&#125;&quot;</span><br><span class="line">46              &quot;$ENV&#123;OPENCV_IPPICV_URL&#125;&quot;</span><br><span class="line">47              &quot;/home/xxx/Download/&quot;</span><br><span class="line">48              DESTINATION_DIR &quot;$&#123;THE_ROOT&#125;&quot;</span><br><span class="line">49              ID IPPICV</span><br><span class="line">50              STATUS res</span><br><span class="line">51              UNPACK RELATIVE_URL)</span><br></pre></td></tr></table></figure></p>
+<p>再次执行上一cmake命令，ok了，</p>
+<p>之后执行make,编译时间有些长， 可以开启多线程编译：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make -j8 &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure></p>
+<p>如果需要库和头文件，从/usr/local/lib和/usr/local/include目录下拷贝提取。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/05/29/第三方c-库编译总结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-pdf解析方法总结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/12/13/pdf解析方法总结/">pdf解析方法总结</a>
+    </h1>
+  
+
+        
+        <a href="/2018/12/13/pdf解析方法总结/" class="archive-article-date">
+  	<time datetime="2018-12-13T01:23:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-13</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>采用python库pdfminer.six和tabula来实现。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/12/13/pdf解析方法总结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-GPU-Cuda与cuDNN的关系理解" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/10/10/GPU-Cuda与cuDNN的关系理解/">GPU,Cuda与cuDNN的关系理解</a>
+    </h1>
+  
+
+        
+        <a href="/2018/10/10/GPU-Cuda与cuDNN的关系理解/" class="archive-article-date">
+  	<time datetime="2018-10-10T09:36:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-10-10</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>因为GPU可以较大的提高运算速度,提升训练效率,所以目前作机器学习训练都少不了GPU,少不了CUDA,也会安装cuDNN.那么GPU,CUDA,cuDNN之间到底是什么关系呢?</p>
+<p>本文是自己网上搜集资料整理而成,以加深自己的理解.</p>
+<p><img src="https://docs.nvidia.com/cuda/cuda-c-programming-guide/graphics/floating-point-operations-per-second.png" alt=""><br>可以看到,GPU的浮点运算能力大大超过CPU.那么,为什么GPU可以在运算速度上比CPU有优势?</p>
+<p><img src="https://docs.nvidia.com/cuda/cuda-c-programming-guide/graphics/gpu-devotes-more-transistors-to-data-processing.png" alt=""></p>
+<p>上图是CPU与GPU之间物理架构上的区别.可以看到GPU有更多的ALU(Arithmetic Logic Unit)单元,而Cache和Control不如CPU多.这样的架构区别,使得GPU更适合进行并行计算,而CPU更适合作复杂的流程控制计算.</p>
+<p>说到底,GPU是通过大量线程的并行运算来实现加速的.对于不能并行计算的任务,GPU其实也很难有什么优势.</p>
+<p>而CUDA就是NVIDIA自己针对旗下的GPU而开发的并行计算框架和编程模型.</p>
+<p>cuDNN（CUDA Deep Neural Network library）是NVIDIA打造的针对深度神经网络的加速库，是一个用于深层神经网络的GPU加速库。如果你要用GPU训练模型，cuDNN不是必须的，但是一般会采用这个加速库。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/10/10/GPU-Cuda与cuDNN的关系理解/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-正则表达式小结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/10/10/正则表达式小结/">正则表达式小结</a>
+    </h1>
+  
+
+        
+        <a href="/2018/10/10/正则表达式小结/" class="archive-article-date">
+  	<time datetime="2018-10-10T01:33:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-10-10</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="元字符及用法"><a href="#元字符及用法" class="headerlink" title="元字符及用法"></a>元字符及用法</h2><hr>
+<p><code>.</code>    – 匹配除换行符之外的任意字符 </p>
+<p><code>*</code>    – 匹配*前面的内容任意次(可以是0次),代表的不是字符也不是位置</p>
+<p><code>+</code>    – 匹配1次或更多次</p>
+<p><code>\s</code>   – 匹配任意的空白符号如空格\制表符(tab)\换行符(\n)\中文全角空格等</p>
+<p><code>\b</code>   – 匹配一个位置,一般代表单词的开始或者结尾</p>
+<p><code>^</code>    – 匹配要查找字符的开头</p>
+<p><code>$</code>    –  匹配结尾</p>
+<p><code>\d</code>   – 匹配一位数字, <code>\d{8}</code>表示匹配8个数字</p>
+<p><code>\w</code>   – 匹配一个字母\数字\下划线\汉字, <code>\w{8}</code>表示匹配8个字母等</p>
+<h2 id="字符转义"><a href="#字符转义" class="headerlink" title="字符转义"></a>字符转义</h2><hr>
+<p><code>\</code>    – 字符转义,比如要查找<code>.</code>,<code>*</code>等元字符,需要使用转义</p>
+<h2 id="重复"><a href="#重复" class="headerlink" title="重复"></a>重复</h2><hr>
+<p><code>*</code>    – 重复0次或者更多次<br><code>+</code>    – 重复1次或者更多次<br><code>?</code>    – 重复0次或者1次<br><code>{n}</code>  – 重复n次<br><code>{n,}</code> – 重复n次或者更多次<br><code>{n,m}</code>– 重复n到m次</p>
+<h2 id="字符集合"><a href="#字符集合" class="headerlink" title="字符集合"></a>字符集合</h2><hr>
+<p><code>[]</code>   – 匹配<code>[]</code>圈定内容的任意一个,如<code>[aeiou]</code>匹配任意一个英文元音字母,<code>[0-9]</code>表示匹配一位数据,与<code>\d</code>完全一致</p>
+<h2 id="分支条件"><a href="#分支条件" class="headerlink" title="分支条件"></a>分支条件</h2><hr>
+<p><code>|</code>    – 将不同的规则分开, 匹配任意一种就当成匹配</p>
+<h2 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h2><hr>
+<p><code>()</code>   – 指定子表达式,这样可以指定子表达式的重复次数了,如 <code>(\d{1, 3}\.){3}</code>匹配1到3位数字外加一个<code>.</code>.</p>
+<h2 id="贪婪与懒惰"><a href="#贪婪与懒惰" class="headerlink" title="贪婪与懒惰"></a>贪婪与懒惰</h2><hr>
+<p>当正则表达式中包含能接受重复的限定符时,通常是匹配尽可能多的字符.<br>如需懒惰匹配(匹配尽可能少的字符),只需在后面加上一个<code>?</code>. </p>
+<p>如<code>a.*b</code>将匹配<code>aabab</code>整个字符串,而<code>a.*?b</code>应用于<code>aabab</code>的话会匹配到<code>aab</code>和<code>ab</code></p>
+<p>懒惰限定符:</p>
+<p><code>*?</code>    – 重复任意次,但尽可能少重复</p>
+<p><code>+?</code>    – 重复1次或更多次,但尽可能少重复</p>
+<p><code>??</code>    – 重复0次或1次,但尽可能少重复</p>
+<p><code>{n,m}?</code>– 重复n到m次,但尽可能少重复</p>
+<p><code>{n,}?</code> – 重复n次或者更多次,但尽可能少重复</p>
+<h2 id="处理选项"><a href="#处理选项" class="headerlink" title="处理选项"></a>处理选项</h2><p><code>i</code> – 忽略大小写</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/10/10/正则表达式小结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-ubuntu18-04-cuda10-cuDNN配置" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/10/09/ubuntu18-04-cuda10-cuDNN配置/">ubuntu18.04_cuda10_cuDNN配置</a>
+    </h1>
+  
+
+        
+        <a href="/2018/10/09/ubuntu18-04-cuda10-cuDNN配置/" class="archive-article-date">
+  	<time datetime="2018-10-09T09:54:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-10-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>部门新上服务器配置是nvidia titan xp双显卡,为了发挥双GPU的作用,提升速度和效果,决定安装最新的Ubuntu18.04LST,并且安装nvidia最新的cuda10(该版本完全支持在ubuntu18上运行,也带来最新的显卡驱动410.x).以下为配置过程.</p>
+<h2 id="Ubuntu的安装"><a href="#Ubuntu的安装" class="headerlink" title="Ubuntu的安装"></a>Ubuntu的安装</h2><p>Ubuntu的安装过程就不详述了,推荐U盘安装,具体操作请自行百度.</p>
+<h2 id="Cuda10的安装"><a href="#Cuda10的安装" class="headerlink" title="Cuda10的安装"></a>Cuda10的安装</h2><p>从NVIDIA网站下载Ubuntu18.04的cuda10的安装包.页面如下:<a href="https://developer.nvidia.com/cuda-downloads?target_os=Linux&amp;target_arch=x86_64&amp;target_distro=Ubuntu&amp;target_version=1804" target="_blank" rel="noopener">https://developer.nvidia.com/cuda-downloads?target_os=Linux&amp;target_arch=x86_64&amp;target_distro=Ubuntu&amp;target_version=1804</a></p>
+<p>推荐下载deb包(1.6G, 相对sh包小400M).</p>
+<p>首先安装依赖:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install build-essential dkms</span><br><span class="line">$ sudo apt-get install freeglut3 freeglut3-dev libxi-dev libxmu-dev</span><br><span class="line"></span><br><span class="line">$ sudo dpkg -i cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64.deb</span><br><span class="line">$ sudo apt-key add /var/cuda-repo-&lt;version&gt;/7fa2af80.pub</span><br><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install cuda</span><br></pre></td></tr></table></figure></p>
+<p>安装过程中会更新显卡驱动程序（需要重启）.<br>安装按成后输入：nvidia-smi，如果显示内容，说明安装成功，否则说明是安装失败。</p>
+<p>安装完成后安装目录默认在/usr/local/cuda下.</p>
+<p>为在系统中使用cuda,需要将cuda加入到环境变量中.方法是将以下内容追加到.bashrc中即可.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda-10.0/bin</span><br><span class="line">export CUDADIR=/usr/local/cuda-10.0</span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/lib64</span><br></pre></td></tr></table></figure></p>
+<p>修改完成后执行source 命令应用更改.可以通过以下命令验证是否配置成功:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ env | grep -i cuda</span><br><span class="line">LD_LIBRARY_PATH=:/usr/local/cuda-10.0/lib64:/usr/local/cuda-9.2/lib64</span><br><span class="line">CUDADIR=/usr/local/cuda-9.2</span><br><span class="line">PATH=/home/kinghorn/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda-10.0/bin:/usr/local/cuda-9.2/bin</span><br></pre></td></tr></table></figure></p>
+<p>如果有兴趣,可以将跑以下sample看看效果.方法如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir test_samples</span><br><span class="line">$ cp -a /usr/local/cuda-10.0/samples ~/test_samples/samples-10.0</span><br><span class="line">$ make -j 4</span><br></pre></td></tr></table></figure></p>
+<p>程序会开始编译,编译完成后选择感兴趣的项目运行就可以了.</p>
+<h2 id="cuDNN的安装"><a href="#cuDNN的安装" class="headerlink" title="cuDNN的安装"></a>cuDNN的安装</h2><p>在<a href="https://developer.nvidia.com/cudnn" target="_blank" rel="noopener">https://developer.nvidia.com/cudnn</a> 注册下载对应版本的cuDNN7.3.1版的runtime-libs和dev-libs.<br>安装方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo dpkg -i libcudnn7_7.3.1.20-1+cuda10.0_ppc64el.deb</span><br><span class="line">$ sudo dpkg -i libcudnn7-dev_7.3.1.20-1+cuda10.0_ppc64el.deb</span><br><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install libcudnn7 libcudnn7-dev</span><br></pre></td></tr></table></figure></p>
+<h2 id="NCCL安装"><a href="#NCCL安装" class="headerlink" title="NCCL安装"></a>NCCL安装</h2><p>因为机器是双显卡,为了最大利用双显卡,需要安装NCCL.NCCL1.0以上版本支持单机多显卡之间的通信,也支持多机之间的通信.<br>安装方法,<br>首先从<a href="https://developer.nvidia.com/nccl/nccl-download" target="_blank" rel="noopener">https://developer.nvidia.com/nccl/nccl-download</a> 下载nccl的deb包,然后安装即可.</p>
+<p>接下来就是编译安装tensorflow了.</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/10/09/ubuntu18-04-cuda10-cuDNN配置/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Install-tensorflow-from-source-md" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/28/Install-tensorflow-from-source-md/">Install tensorflow from source.md</a>
+    </h1>
+  
+
+        
+        <a href="/2018/09/28/Install-tensorflow-from-source-md/" class="archive-article-date">
+  	<time datetime="2018-09-28T04:41:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-09-28</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>基于python的Tensorflow可以很简单直接通过google编译好的二进制文件进行安装,下载地址是在<a href="https://github.com/tensorflow/tensorflow" target="_blank" rel="noopener">Tensorflow</a>下载.</p>
+<p>但安装是经常看到tensorflow报警告说什么cpu的某些指令不支持,或者你已经安装了较高版本显卡驱动和cuda及cuDNN,而官网的tf并不支持,从而import时报类似如下错误:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory</span><br></pre></td></tr></table></figure></p>
+<p>该类错误是因为cuda与下载的tf之间不匹配导致,比如tf1.10版本依赖的是cuda9.0,而系统安装的是cuda9.2,这时就会报文件找不到的错.</p>
+<p>或者提示如下警告:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Warning: your cpu supports instructions that this tensorflow binary was not compiled to use: avx2 fma</span><br></pre></td></tr></table></figure></p>
+<p>该提示表明tensorflow没有编译使用机器上CPU支持的avx2,fma指令集.</p>
+<p>为避免这些问题,提高tf的运行效率,可以通过源码来进行编译安装.</p>
+<p>编译安装的过程其实也很简单,只是编译过程可能要耗费较长的时间.编译过程可以参考<a href="https://www.tensorflow.org/install/install_sources" target="_blank" rel="noopener">tensorflow官网的安装指南</a>.</p>
+<p>这篇博客主要记录一下自己的编译安装过程.</p>
+<h3 id="机器环境"><a href="#机器环境" class="headerlink" title="机器环境"></a>机器环境</h3><p>先说一下机器的情况:</p>
+<pre><code>  双显卡: nvidia titan xp
+操作系统: ubuntu 18.04
+   cuda: 10.0
+  cuDNN: 7.3
+   NCCL: 2.3.5
+ python: Anaconda 3.5.2
+</code></pre><p><em>Ubuntu,Cuda,cuDNN,NCCL等安装过程参考其他博文</em>.<br><em>NCCL是编译安装的,library路径为: /usr/local/nccl</em></p>
+<h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><ol>
+<li>安装bazel</li>
+</ol>
+<p>参考<a href="https://docs.bazel.build/versions/master/install-ubuntu.html" target="_blank" rel="noopener">官方文档</a>安装过程如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 下载bazel,从 Bazel GitHub(https://github.com/bazelbuild/bazel/releases)</span><br><span class="line">$ wget https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-installer-linux-x86_64.sh</span><br><span class="line"></span><br><span class="line"># 安装依赖</span><br><span class="line">$ sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python</span><br><span class="line"></span><br><span class="line">$ chmod +x bazel-0.17.2-installer-linux-x86_64.sh</span><br><span class="line">$ ./bazel-0.17.2-installer-linux-x86_64.sh</span><br></pre></td></tr></table></figure></p>
+<ol start="2">
+<li>安装 TensorFlow Python 依赖项</li>
+</ol>
+<p>numpy：这是 TensorFlow 需要的数值处理软件包。<br>dev：用于向 Python 添加扩展程序。<br>pip：用于安装和管理某些 Python 软件包。<br>wheel：用于管理 wheel (.whl) 格式的 Python 压缩包。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install python3-numpy python3-dev python3-pip python3-wheel</span><br></pre></td></tr></table></figure></p>
+<p><em>这里也可以先安装pip,然后通过安装这写依赖</em></p>
+<ol start="3">
+<li>准备tf源码</li>
+</ol>
+<p>如果安装了git可以直接从github上clone代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/tensorflow/tensorflow</span><br><span class="line">$ cd tensorflow</span><br><span class="line">$ git checkout r1.10</span><br></pre></td></tr></table></figure></p>
+<p>目前稳定版为1.10版,所以我们切换到r1.10分支.<br>也可以通过下载器下载,地址为:<a href="https://github.com/tensorflow/tensorflow/archive/r1.10.zip" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/archive/r1.10.zip</a></p>
+<h3 id="编译tf安装文件"><a href="#编译tf安装文件" class="headerlink" title="编译tf安装文件"></a>编译tf安装文件</h3><ol>
+<li>配置编译环境</li>
+</ol>
+<p>运行代码目录下的configure,会通过提问的方式让你配置tensorflow,所以你需要的就是按照步骤完成配置就可以.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">$ ./configure</span><br><span class="line">You have bazel 0.17.2 installed.</span><br><span class="line">Please specify the location of python. [Default is /home/name/Anaconda3.5/bin]:</span><br><span class="line"></span><br><span class="line">Found possible Python library paths:</span><br><span class="line">  /usr/local/lib/python3.6/dist-packages</span><br><span class="line">  /usr/lib/python3/dist-packages</span><br><span class="line">Please input the desired Python library path to use.  Default is [/usr/local/lib/python3.6/dist-packages]</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with jemalloc as malloc support? [Y/n]: y</span><br><span class="line">jemalloc as malloc support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with Google Cloud Platform support? [Y/n]: n</span><br><span class="line">No Google Cloud Platform support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with Hadoop File System support? [Y/n]: n</span><br><span class="line">No Hadoop File System support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with Amazon S3 File System support? [Y/n]: n</span><br><span class="line">No Amazon S3 File System support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with XLA JIT support? [y/N]: n</span><br><span class="line">No XLA JIT support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with GDR support? [y/N]: n</span><br><span class="line">No GDR support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with VERBS support? [y/N]: n</span><br><span class="line">No VERBS support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with OpenCL SYCL support? [y/N]: n</span><br><span class="line">No OpenCL SYCL support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with CUDA support? [y/N]: y</span><br><span class="line">CUDA support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Do you want to use clang as CUDA compiler? [y/N]</span><br><span class="line">nvcc will be used as CUDA compiler</span><br><span class="line"></span><br><span class="line">Please specify the CUDA SDK version you want to use, e.g. 7.0. [Leave empty to default to CUDA 9.0]: 10.0</span><br><span class="line"></span><br><span class="line">Please specify the location where CUDA 10.0 toolkit is installed. Refer to README.md for more details. [Default is /usr/local/cuda]:</span><br><span class="line"></span><br><span class="line">Please specify which gcc should be used by nvcc as the host compiler. [Default is /usr/bin/gcc]:</span><br><span class="line"></span><br><span class="line">Please specify the cuDNN version you want to use. [Leave empty to default to cuDNN 7.0]: 7.3</span><br><span class="line"></span><br><span class="line">Please specify the location where cuDNN 7.3 library is installed. Refer to README.md for more details. [Default is /usr/local/cuda]:</span><br><span class="line"></span><br><span class="line">Please specify a list of comma-separated CUDA compute capabilities you want to build with.</span><br><span class="line">You can find the compute capability of your device at: https://developer.nvidia.com/cuda-gpus.</span><br><span class="line">Please note that each additional compute capability significantly increases your build time and binary size.</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with TensorRT support? [y/N]: N</span><br><span class="line">No TensorRT support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Please specify the NCCL version you want to use. If NCCL 2.2 is not installed, then you can use version 1.3 that can be fetched automatically but it may have worse performance with multiple GPUs. [Default is 2.2]: 2.3.5</span><br><span class="line"></span><br><span class="line">Please specify the location where NCCL 2 library is installed. Refer to README.md for more details. [Default is /usr/local/cuda]:/usr/local/nccl</span><br><span class="line"></span><br><span class="line">Do you wish to build TensorFlow with MPI support? [y/N]: n</span><br><span class="line">No MPI support will be enabled for TensorFlow.</span><br><span class="line"></span><br><span class="line">Please specify optimization flags to use during compilation when bazel option &quot;--config=opt&quot; is specified [Default is -march=native]: --config=mkl</span><br><span class="line"></span><br><span class="line">Add &quot;--config=mkl&quot; to your bazel command to build with MKL support.</span><br><span class="line">Please note that MKL on MacOS or windows is still not supported.</span><br><span class="line">If you would like to use a local MKL instead of downloading, please set the environment variable &quot;TF_MKL_ROOT&quot; every time before build.</span><br><span class="line"></span><br><span class="line">Would you like to interactively configure ./WORKSPACE for Android builds? [y/N]: n</span><br><span class="line">Not configuring the WORKSPACE for Android builds.</span><br><span class="line"></span><br><span class="line">Configuration finished</span><br></pre></td></tr></table></figure></p>
+<ol start="2">
+<li>编译目标</li>
+</ol>
+<p>首先构建build_pip_package的脚本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure></p>
+<p>这里如果机器较差,内存较小,编译时机器容易出现卡死的情况,这时需要加入如下参数:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--local_resources 2048,.5,1.0</span><br></pre></td></tr></table></figure></p>
+<p>完整命令为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package --local_resources 2048,.5,1.0</span><br></pre></td></tr></table></figure></p>
+<p>成功后运行:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg</span><br></pre></td></tr></table></figure></p>
+<p>执行成功后, 编译好的pip安装文件就在/tmp/tensorflow_pkg/目录下.</p>
+<ol start="3">
+<li>安装<br>可以运行以下命令安装:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install /tmp/tensorflow_pkg/tensorflow-1.8.0-py2-none-any.whl</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>如果为当前用户安装,就无需sudo了.</p>
+<ol start="4">
+<li>测试效果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ python</span><br><span class="line">&gt;&gt;&gt; import tensorflow as tf</span><br><span class="line">&gt;&gt;&gt; hello = tf.constant(&apos;Hello, TensorFlow!&apos;)</span><br><span class="line">&gt;&gt;&gt; sess = tf.Session()</span><br><span class="line">&gt;&gt;&gt; print(sess.run(hello).decode(&apos;utf-8&apos;))</span><br><span class="line">Hello, TensorFlow!</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>成功运行.done!</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/09/28/Install-tensorflow-from-source-md/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-SVM算法推导" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -528,608 +1047,6 @@ OEM_DEFAULT                    Default, based on what is available.
 
 
   
-    <article id="post-统计语言模型" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/12/统计语言模型/">统计语言模型</a>
-    </h1>
-  
-
-        
-        <a href="/2018/06/12/统计语言模型/" class="archive-article-date">
-  	<time datetime="2018-06-12T03:04:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>从文本、图片、语音和视屏数据中提取挖掘有价值的信息，离不开自然语言处理（NLP）。而统计语言模型(Statistical Language Model)是很重要的一环，它是所有NLP的基础，被广泛的应用于语音识别、机器翻译、分词、词性标注和信息检索等任务。</p>
-<p>比如，在语音识别系统中，对于给定的语音段Ｖoice，需要找到一个使得概率<a><img src="https://latex.codecogs.com/gif.latex?p(Text|Voice)"></a>最大的文本段Text，　利用Bayes公式，有:</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?p(Text|Voice)&space;=&space;\frac{p(Voice|Text)p(Text)}{p(Voice)}"></a></p>
-<p>其中，ｐ(Voice|Text)为声学模型，p(Text)为语言模型。</p>
-<p>统计语言模型简单的说，就是用来计算一个句子概率的统计模型。通常基于一个语料库来构建。一个句子有Ｔ个词（w1,w2、…、wT）,则句子的概率就相当于这Ｔ个词按先后顺序同时出现的联合概率为：</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?p(W)=p(w^{T})=p(w_{1},w_{2},...,w_{T})=p(w_{1})p(w_{2}|w_{1})p(w_{3}|w_{1},w_{2})...p(w_{T}|w_{1},...,w_{T-1})"></a></p>
-<p>可见，如果字符串长度为T，那么对每一种可能（假如N种）模型的参数数量就是T，所以统计时计算量会非常大，理论计算量就是TN^T。<br>模型很简单，计算也很简单，就是计算量太大，操作性太差。于是有了很多近似计算这个概率的办法，比如n-gram, 决策树，最大熵模型，最大熵马尔科夫模型，条件随机场，神经网络等。</p>
-<h3 id="n-gram模型"><a href="#n-gram模型" class="headerlink" title="n-gram模型"></a>n-gram模型</h3><p>基本思想就是：一个词出现的概率只与它前面的ｎ-1个词相关（Markov假设）。</p>
-<p>首先思考<a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})"></a>的计算。根据Bayes:</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})&space;=&space;\frac{p(w_{1},...,w_{k})}{p(w_{1},...,w_{k-1})}"></a></p>
-<p>当语料库足够大时，可以根据大数定理，近似的计算上式子：<br><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})&space;=&space;\frac{p(w_{1},...,w_{k})}{p(w_{1},...,w_{k-1})}\approx&space;\frac{Count(w_{1},...,w_{k})}{Count(w_{1},...,w_{k-1})}"></a></p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k})"></a>和<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k-1})"></a>表示两个词串在语料库中出现的次数。当ｋ很大时，<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k})"></a>和<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k-1})"></a>的统计就会非常费时。</p>
-<p>为了简化这种统计，俄罗斯数学家Markov提出了一个假设：那就是一个词出现的概率只与前面固定的数目(比如n)的词相关，那么上述统计可以简化为：<br><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})\approx&space;p(w_{k}|w_{k-n&plus;1},...,w_{k-1})=\frac{p(w_{k-n&plus;1},...,w_{k})}{p(w_{k-n&plus;1},...,w_{k-1})}\approx&space;\frac{Count(w_{k-n&plus;1},...,w_{k-1}}{Count(w_{k-n&plus;1},...,w_{k-1}}"></a></p>
-<p>那么现在，单个参数的统计变的容易，参数的总数也变少了。语言模型p(Text)的计算可以以一种简单的方式很快计算完成。</p>
-<h3 id="词向量"><a href="#词向量" class="headerlink" title="词向量"></a>词向量</h3><p>将自然语言交个计算机处理，首先需要将语言数字化。词向量就是一种很好的方式。</p>
-<p>One-hot Representation是一种，实现就是根据字典中的词，然后对应句子，存在的词值1，不存在的全为0. 它不能很好的刻画词与词之间的相似性，而且容易受维数灾难的困扰。</p>
-<p>Distributated Representation是另一种词向量，可以克服One-hot词向量的问题，并可以很好的用在深度学习的场景中。实现方法：将语言中的每个词映射成一个固定长度的短向量，这些向量构成一个词向量空间，向量的距离来判断它们之间的相似性。word2vec就是一种生成词向量的方法.</p>
-<h3 id="word2vec"><a href="#word2vec" class="headerlink" title="word2vec"></a>word2vec</h3><p>word2vec有两种生成方式:CBOW和Skip-Gram.</p>
-<p>关于CBOW和Skip-Gram,下一篇文章再讲吧.</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/06/12/统计语言模型/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Tensorflow-算法步骤" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/08/Tensorflow-算法步骤/">Tensorflow:算法步骤</a>
-    </h1>
-  
-
-        
-        <a href="/2018/06/08/Tensorflow-算法步骤/" class="archive-article-date">
-  	<time datetime="2018-06-08T03:52:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>使用Tensorflow进行算法设计、训练可以分成四个步骤：</p>
-<ol>
-<li>定义算法公式，也就是神经网络forward的计算</li>
-<li>定义loss-function，指定对loss进行优化的优化器</li>
-<li>模型训练。</li>
-<li>在测试集或验证集上对准确率进行评估。</li>
-</ol>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/06/08/Tensorflow-算法步骤/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Tensorflow搭建CNN进行图形识别-1-实现" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/">基于Tensorflow搭建CNN进行图形识别(1)-实现</a>
-    </h1>
-  
-
-        
-        <a href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/" class="archive-article-date">
-  	<time datetime="2018-06-06T02:48:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-06</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>根据基础的介绍，对CNN的卷积，常见层（非线性，池化，全连接等），图像加载，图像操作和颜色空间等相关知识做了了解。下面就是要把这些知识串联用起来，来实现一个简单的图像目标识别和分类的CNN。CNN的网络架构有很多种，这里实现采用AlexNet（2012年ILSVRC冠军）的简化版。<br>网络架构：</p>
-<div><br>  <div>Stanford Dogs DataSet</div><br>  <div>Conv Layer1</div><br>  <div>pool layer1</div><br>  <div>Conv Layer2<br>  <div>pool layer2</div><br>  <div>Dropout</div><br>  <div>Hidden</div><br>  <div>fc<br></div>
-
-<p>可以基于AlexNet的基础，我们搭建一个简单的CNN：有2个卷积层，两个全连接层（其中一个softmax）。</p>
-<p>过程如下：<br>因为需要对多层需要对权重值和偏置值进行初始化，先定义两个初始化函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">weight_initializer</span><span class="params">(shape)</span>:</span></span><br><span class="line">  initial = tf.truncated_normal(shape, stddev=<span class="number">0.1</span>)</span><br><span class="line">  <span class="keyword">return</span> tf.Variable(initial)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bias_initializer</span><span class="params">(shape)</span>:</span></span><br><span class="line">  initial = tf.constant(<span class="number">0.1</span>, shape=shape)</span><br><span class="line">  <span class="keyword">return</span> tf.Variable(initial)</span><br></pre></td></tr></table></figure></p>
-<p>然后定义卷积操作和max_pool操作的函数。</p>
-<p>卷积操作的设置长宽方向的步长均为1，即strides=[1，1,1,1]，如果要设置长宽方向的步长分别为2,3的话，strides就等于[1,2,3,1],<a href="https://www.tensorflow.org/versions/master/api_docs/python/tf/nn/conv2d" target="_blank" rel="noopener">具体参考tensorflow的官方说明.</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">conv2d</span><span class="params">(x, kernel)</span>:</span></span><br><span class="line">  <span class="keyword">return</span> tf.nn.conv2d(</span><br><span class="line">    x, </span><br><span class="line">    kernel, </span><br><span class="line">    strides=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], </span><br><span class="line">    padding=<span class="string">'SAME'</span></span><br><span class="line">  )</span><br></pre></td></tr></table></figure></p>
-<p>池化操作采用max_pool，池化操作的核大小为2，步长为2.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">max_pool_2x2</span><span class="params">(x)</span>:</span></span><br><span class="line">  <span class="keyword">return</span> tf.nn.max_pool(</span><br><span class="line">    x,</span><br><span class="line">    ksize=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>],</span><br><span class="line">    strides=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>],</span><br><span class="line">    padding=<span class="string">'SAME'</span></span><br><span class="line">  )</span><br></pre></td></tr></table></figure></p>
-<p><strong>CNN网络结构定义</strong><br>样本参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x_width = <span class="number">28</span>    <span class="comment"># 输入图片的宽度</span></span><br><span class="line">x_height = <span class="number">28</span>   <span class="comment"># 输入图片的高度</span></span><br><span class="line">x_channel = <span class="number">1</span>   <span class="comment"># 输入图片的颜色通道数</span></span><br><span class="line">class_num = <span class="number">10</span>  <span class="comment"># 样本种类</span></span><br></pre></td></tr></table></figure></p>
-<p>输入参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = tf.placeholder(tf.float32, [<span class="keyword">None</span>, x_width, x_height, x_channel])</span><br><span class="line">y_ = tf.placeholder(tf.float32, [<span class="keyword">None</span>, class_num])</span><br><span class="line">keep_prob = tf.placeholder(tf.float32)</span><br></pre></td></tr></table></figure></p>
-<p>定义卷积层<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Converlution_Layer_1'</span>):</span><br><span class="line">  conv1_k_size = <span class="number">5</span>      <span class="comment"># 卷积核大小 5x5</span></span><br><span class="line">  conv1_filter_num = <span class="number">32</span> <span class="comment"># 滤波器个数，也就是想要抽取的特征数</span></span><br><span class="line">  conv1_channel = x_channel</span><br><span class="line">  W_conv1 = weight_initializer([conv1_k_size, conv1_k_size, conv1_channel, conv1_filter_num])</span><br><span class="line">  b_conv1 = bias_initializer([conv1_filter_num])</span><br><span class="line">  h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1)     <span class="comment"># 隐藏层</span></span><br><span class="line">  pool_conv1 = max_pool_2x2(h_conv1)                     <span class="comment"># pool层</span></span><br><span class="line">  map_size = x_width/<span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Converlution_Layer_2'</span>):</span><br><span class="line">  conv2_k_size = <span class="number">5</span></span><br><span class="line">  conv2_filter_num = <span class="number">64</span></span><br><span class="line">  conv2_channel = conv1_filter_num</span><br><span class="line">  W_conv2 = weight_initializer([conv2_k_size, conv2_k_size, conv2_channel, conv2_filter_num])</span><br><span class="line">  b_conv2 = bias_initializer([conv2_filter_num])</span><br><span class="line">  h_conv2 = tf.nn.relu(conv2d(pool_conv1, W_conv2) + b_conv2)</span><br><span class="line">  pool_conv2 = max_pool_2x2(h_conv2)</span><br><span class="line">  map_size = map_size/<span class="number">2</span></span><br></pre></td></tr></table></figure></p>
-<p>定义全连接层<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Fully_Connected_1'</span>):</span><br><span class="line">  nodes_num_fc1 = <span class="number">1024</span>    <span class="comment"># 隐含节点数</span></span><br><span class="line">  features_size_fc1 = map_size * map_size * conv2_filter_num</span><br><span class="line">  W_fc1 = weight_initializer([features_size_fc1, nodes_num_fc1])</span><br><span class="line">  b_fc1 = bias_initializer([nodes_num_fc1])</span><br><span class="line">  pool2_flat = tf.reshape(pool_conv2, [<span class="number">-1</span>, features_size_fc1])</span><br><span class="line">  h_fc1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)</span><br><span class="line">  drop_fc1 = tf.nn.dropout(h_fc1, keep_prob)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Softmax_Regression'</span>):</span><br><span class="line">  W_fc2 = weight_initializer([nodes_num_fc1, class_num])</span><br><span class="line">  b_fc2 = bias_initializer([class_num])</span><br><span class="line">  y_predict = tf.nn.softmax(tf.matmul(drop_fc1, W_fc2) + b_fc2)</span><br></pre></td></tr></table></figure></p>
-<p>定义训练方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">learning_rate = <span class="number">1e-3</span></span><br><span class="line">training_steps = <span class="number">4000</span></span><br><span class="line">loss_corss_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_predict), reduction_indices=[<span class="number">1</span>]))</span><br><span class="line">train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss_corss_entropy)</span><br></pre></td></tr></table></figure></p>
-<p>定义评估方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prediction = tf.equal(tf.argmax(y_predict, <span class="number">1</span>), tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))</span><br></pre></td></tr></table></figure></p>
-<p>最后是训练和效果评估过程<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># training</span></span><br><span class="line">tf.global_variables_initializer().run()</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(training_steps):</span><br><span class="line">  train_x, train_y = input_train()</span><br><span class="line">  <span class="keyword">if</span> i % <span class="number">100</span> == <span class="number">0</span>:</span><br><span class="line">    print(</span><br><span class="line">      <span class="string">'step %d accuracy is %g'</span> %(i, accuracy.eval(feed_dict=&#123;x: train_x, y_: train_y, keep_prob: <span class="number">1.</span>&#125;))</span><br><span class="line">    )</span><br><span class="line">  train_step.run(feed_dict=&#123;x: train_x, y_: train_y, keep_prob:<span class="number">0.75</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># evaluation </span></span><br><span class="line">test_x, test_y = input_test()</span><br><span class="line">print(<span class="string">'test accuracy is %g'</span> % accuracy.eval(feed_dict=&#123;x: test_x, y_: test_y, keep_prob: <span class="number">1.0</span>&#125;))</span><br></pre></td></tr></table></figure></p>
-<p>可以使用手写数据mnist来输入进行训练和评估。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line">mnist = input_data.read_data_sets(<span class="string">'MNIST_data'</span>,one_hot=<span class="keyword">True</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">input_train</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="string">"""</span></span><br><span class="line"><span class="string">  add your input procedure to import training data</span></span><br><span class="line"><span class="string">  """</span></span><br><span class="line">  batch = mnist.train.next_batch(<span class="number">50</span>)</span><br><span class="line">  x = np.reshape(batch[<span class="number">0</span>], [<span class="number">-1</span>, <span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>])</span><br><span class="line">  <span class="keyword">return</span> x, batch[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">input_test</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="string">"""</span></span><br><span class="line"><span class="string">  add your input procedure to import testing data</span></span><br><span class="line"><span class="string">  """</span></span><br><span class="line">  test_x = np.reshape(mnist.test.images, [<span class="number">-1</span>, <span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>])</span><br><span class="line">  <span class="keyword">return</span> test_x, mnist.test.labels</span><br></pre></td></tr></table></figure></p>
-<p>当然也可在input_train和input_test中添加自己的数据输入资料来训练。</p>
-</div></div>
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Tensorflow搭建CNN进行图形识别-1-基础" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/">基于Tensorflow搭建CNN进行图形识别(1)-基础</a>
-    </h1>
-  
-
-        
-        <a href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/" class="archive-article-date">
-  	<time datetime="2018-06-04T08:18:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>自从2012年的ImageNet举行的大规模视觉识别挑战赛（ILSVRC）以来，CNN（卷积神经网络，不是指某新闻资讯频道）在计算机视觉领域取得的空前准确性使之一直为人们所持续关注。我想自己做点图像识别方向的小东西，目前在为实现积攒技术，比如学习tf、opencv等。本篇文章记录下采用tf搭建CNN的过程，记录自己的实际操作过程。有些理论的东西就直接搬过来了，以对抗遗忘。</p>
-<p>个人写博客，就是写给自己，目前水平有限，不敢说指导别人了，纯粹就当自己的读书笔记了。</p>
-<p>好了，言归正传，要搭建CNN，首先要了解什么是CNN。CNN（卷积神经网络）是一种至少包含一个卷积层的神经网络，该层使计算输入f与一组可配置的卷积核g的卷积。<a href="https://zhuanlan.zhihu.com/p/31554961" target="_blank" rel="noopener">知乎上红色石头的机器学习之路</a>已经对卷积神经网络的基础做出了图文并茂的解释，所以这部分内容可以参考，如果E文比较好的话直接上coursera上看Andrw Ng的课程。就不在炒冷饭了（写的可能还没它的好）。</p>
-<p><strong>CNN的组成:</strong></p>
-<ul>
-<li>图像输入</li>
-<li>卷积层<ul>
-<li>conv2d</li>
-<li>depthwise_conv2d</li>
-<li>separable_conv2d</li>
-<li>conv2d_transpose</li>
-<li>LRN<ul>
-<li>效果不好，目前用的少</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>激活函数:<ul>
-<li>relu<ul>
-<li>计算量小，速度快</li>
-<li>在小于0时，梯度无法计算，容易导致神经元“死亡”</li>
-</ul>
-</li>
-<li>修正relu</li>
-<li>sigmoid[0.0, 1.0]<ul>
-<li>压缩函数，饱和区梯度接近0，容易出现梯度消失</li>
-<li>指数计算量大</li>
-<li>非对称</li>
-</ul>
-</li>
-<li>tanh[-1.0, 1.0]<ul>
-<li>对称</li>
-</ul>
-</li>
-<li>dropout</li>
-</ul>
-</li>
-<li>池化层<ul>
-<li>max_pool</li>
-<li>avg_pool</li>
-</ul>
-</li>
-<li>全连接层<ul>
-<li>fully_connected</li>
-</ul>
-</li>
-</ul>
-<p><strong>图像操作：</strong></p>
-<ul>
-<li>裁剪<ul>
-<li>tf.image.central_crop()</li>
-<li>tf.image.crop_to_bounding_box()</li>
-<li>tf.slice()</li>
-</ul>
-</li>
-<li>边界填充<ul>
-<li>tf.image.pad_to_bounding_box()</li>
-<li>tf.image.resize_image_with_crip_or_pad()</li>
-</ul>
-</li>
-<li>翻转<ul>
-<li>tf.image.flip_left_rigth()</li>
-<li>tf.image.flip_up_down()</li>
-<li>tf.image.random_flip_left_right()</li>
-<li>tf.image.random_flip_up_down()</li>
-</ul>
-</li>
-<li>饱和平衡<ul>
-<li>tf.image.adjust_brightness()</li>
-<li>tf.image.adjust_contrast()</li>
-<li>tf.image.adjust_saturation()</li>
-</ul>
-</li>
-</ul>
-<p><strong>颜色转换</strong></p>
-<ul>
-<li>灰度<ul>
-<li>tf.image.rgb_to_grayscale()<blockquote>
-<p>每个像素的所有颜色值取平均，将其作为灰度值来实现。</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li>HSV(HSB)空间<ul>
-<li>tf.image.rgb_to_hsv()</li>
-</ul>
-</li>
-<li>RGB<ul>
-<li>tf.image.grayscale_to_rgb()<blockquote>
-<p>意义不大。只是将灰度值作为RGB来填充得到。</p>
-</blockquote>
-</li>
-<li>tf.image.hsv_to_rgb()</li>
-</ul>
-</li>
-<li>LAB空间</li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-pandas使用小结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/31/pandas使用小结/">‘pandas使用小结’</a>
-    </h1>
-  
-
-        
-        <a href="/2018/05/31/pandas使用小结/" class="archive-article-date">
-  	<time datetime="2018-05-31T09:32:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-05-31</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Pandas处理以下三种数据结构：</p>
-<ul>
-<li><p>Series</p>
-<blockquote>
-<p>相同数据类型的一维数组结构。</p>
-</blockquote>
-</li>
-<li><p>DataFrame</p>
-<blockquote>
-<p>具有异构数据的二维数据结构。</p>
-</blockquote>
-</li>
-<li><p>Panel</p>
-<blockquote>
-<p>具有异构数据的三维数据结构。</p>
-</blockquote>
-</li>
-</ul>
-<p>简单理解三者的关系就是： DataFrame是Series的容器，Panel是DataFrame的容器。</p>
-<h2 id="read-csv"><a href="#read-csv" class="headerlink" title="read_csv"></a>read_csv</h2><p>如iris_training.csv文件内数据格式为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">120,4,setosa,versicolor,virginica</span><br><span class="line">6.4,2.8,5.6,2.2,2</span><br><span class="line">5.0,2.3,3.3,1.0,1</span><br><span class="line">4.9,2.5,4.5,1.7,2</span><br><span class="line">4.9,3.1,1.5,0.1,0</span><br><span class="line">5.7,3.8,1.7,0.3,0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>使用pandas可以读入数据到DataFrame。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import pandas as pd</span><br><span class="line"></span><br><span class="line">train_df = pd.read_csv(&apos;./iris_training.csv&apos;)</span><br><span class="line">print train_df</span><br></pre></td></tr></table></figure></p>
-<p>输出为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">     120    4  setosa  versicolor  virginica</span><br><span class="line">0    6.4  2.8     5.6         2.2          2</span><br><span class="line">1    5.0  2.3     3.3         1.0          1</span><br><span class="line">2    4.9  2.5     4.5         1.7          2</span><br><span class="line">3    4.9  3.1     1.5         0.1          0</span><br><span class="line">4    5.7  3.8     1.7         0.3          0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>可以在读入时制定列名和列数据的类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">column_names = [&apos;sepel_length&apos;, &apos;sepel_width&apos;, &apos;petal_length&apos;,&apos;petal_width&apos;, &apos;label&apos;]</span><br><span class="line">  type = &#123;</span><br><span class="line">    &apos;sepel_length&apos;:np.float, &apos;sepel_width&apos;:np.float, &apos;petal_length&apos;:np.float,&apos;petal_width&apos;:np.float, &apos;label&apos;:np.int</span><br><span class="line">  &#125;</span><br><span class="line">train_df = pd.read_csv(&apos;./iris_training.csv&apos;，names=column_names, dtype=data_type，header=0)</span><br></pre></td></tr></table></figure></p>
-<p>输出变为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">     sepel_length  sepel_width  petal_length  petal_width  label</span><br><span class="line">0             6.4          2.8           5.6          2.2      2</span><br><span class="line">1             5.0          2.3           3.3          1.0      1</span><br><span class="line">2             4.9          2.5           4.5          1.7      2</span><br><span class="line">3             4.9          3.1           1.5          0.1      0</span><br><span class="line">4             5.7          3.8           1.7          0.3      0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/05/31/pandas使用小结/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Tensorflow损失函数的用法小结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/30/Tensorflow损失函数的用法小结/">Tensorflow损失函数的用法小结</a>
-    </h1>
-  
-
-        
-        <a href="/2018/05/30/Tensorflow损失函数的用法小结/" class="archive-article-date">
-  	<time datetime="2018-05-30T08:47:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-05-30</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在进行机器学习时，一般的过程是，根据问题的特征（样本参数）建立模型，当输入特征参数到模型中时，可以获得与实际测量结果相同或者相近的计算结果。开始时并不知道模型应该使用什么样的参数，只能通过给定结果的训练数据集，对模型进行训练，使得模型计算结果与实际测量结果相同或者接近，用数据表示就是损失函数。对模型进行优化的过程其实就是在求损失函数最小值的过程。</p>
-<p>常用的损失函数有MSE，交叉熵。Tensorflow提供了不同损失函数的实现。下面简要介绍总结一下Tensorflow中MSE和交叉熵损失函数的用法。</p>
-<h2 id="MSE"><a href="#MSE" class="headerlink" title="MSE"></a>MSE</h2><p>常见的Loss函数时MSE（Mean squared Error）.计算方法如下：</p>
-<p>均方差很好理解，就是反映预测值与真实值之间的差异情况。为避免负值，一般取绝对值或者平方。</p>
-<p><a href="https://www.codecogs.com/eqnedit.php?latex=L&space;=&space;\frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?L&space;=&space;\frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}" title="L = \frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}"></a></p>
-<p><code>Y</code>表示真实值，<code>Y‘</code>表示预测值。</p>
-<p>在tensorflow中表达MSE：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line"></span><br><span class="line">Y_ = tf.matmul(X, W) + b</span><br><span class="line">tf.reduce_mean(tf.squared_difference(Y, Y_))</span><br></pre></td></tr></table></figure></p>
-<p>MSE可以表达预测值与真实值之间的差异，但是在分类问题中效果不如交叉熵好。</p>
-<h2 id="交叉熵"><a href="#交叉熵" class="headerlink" title="交叉熵"></a>交叉熵</h2><p>1948年，Claude Shannon在他的著名论文（A Mathematic Theory of Communication）中提出信息熵的概念来对信息进行度量。信息的信息量与其不确定性有直接的关系。如果对某件事一无所知，那么就需要大量的信息，如果一件事情百分百确定，那么给出的再多信息都没有信息量。所以，信息量就等于不确定性的多少。</p>
-<p>信息熵的定义：</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?H(X)=-\sum_{x\in&space;X}P(x)lnP(x)" title="H(X)=-\sum_{x\in X}P(x)logP(x)"></a></p>
-<p>其定义形式与热力学的熵有很大的相似性。</p>
-<p>在信息论中，若一个符号字符串中每个字符出现概率<code>Pi</code>已知，就利用信息熵估计该字符串中每个符号<code>Si</code>编码所需的平均最小位数，其意义是，采用最优编码方案是，每个字符号需要的bit位。比如要对’helloworld‘这个字符串进行编码，可以先计算每个字符出现的概率，然后计算信息熵。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">P(&apos;h&apos;) = P(&apos;e&apos;) = P(&apos;w&apos;) =P(&apos;r&apos;) = P(&apos;d&apos;) = 1/10 = 0.1</span><br><span class="line">P(&apos;o&apos;) = 2/10 = 0.2</span><br><span class="line">P(&apos;l&apos;) = 3/10 = 0.3</span><br><span class="line">H = -0.3*log(0.3)-0.2*log(0.2)-5*0.1*log(0.1)≈2.646≈3</span><br></pre></td></tr></table></figure></p>
-<p>采用最优化编码方式来进行编码时每个符号需要3bit。</p>
-<p>要了解交叉熵，首先了解下相对熵（kullback-leibler divergence）。</p>
-<p>相对熵是用来衡量两个取值为正数的函数的相似性，这与变量的互信息不同（互信息是用来表示，在了解其中一个变量的情况下，对消除另一个X不确定性所提供的信息量，类似于条件概率）。交叉熵的公式表达为：</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?KL(f(x)||q(x))=\sum_{x\in&space;X}f(x)log\frac{f(x)}{q(x)}=-\sum_{x\in&space;X}f(x)log&space;q(x)&plus;\sum_{x\in&space;X}f(x)logf(x)" title="KL(f(x)||q(x))=\sum_{x\in X}f(x)log\frac{f(x)}{q(x)}=-\sum_{x\in X}f(x)log q(x)+\sum_{x\in X}f(x)logf(x)"></a></p>
-<p>关于相对熵，有三条结论：</p>
-<ul>
-<li>完全相同的函数，交叉熵等于0</li>
-<li>相对熵越大，两个函数的差异就越大；交叉熵越小，两个函数的差异越小，</li>
-<li>对于概率分布或者概率密度函数，如果取值均大于0，相对熵可以度量两个随机分布的差异性。</li>
-</ul>
-<p>如果<code>f(x)</code>是数据的真实概率分布，<code>q(x)</code>是由数据计算得到的概率分布。这样公式的前半部分是一个常数。当<code>q(x)</code>和<code>f(x)</code>越趋近相同，则相对熵越趋近于最小值（0）。</p>
-<p>相对熵的前半部分，就是交叉熵。当相对熵趋近于最小值也就是交叉熵趋近于最小值。</p>
-<p><a><img src="https://latex.codecogs.com/gif.latex?H=-\sum_{x\in&space;X}f(x)log&space;q(x)" title="H=-\sum_{x\in X}f(x)log q(x)"></a></p>
-<p><code>f(x)</code>一般为数据的真实概率（比如样本的真实值），<code>q(x)</code>为计算的得到的概率分布（预测值），机器学习的目的就是希望<code>q(x)</code>尽可能的逼近<code>f(x)</code>，因此对<code>q(x)</code>的优化就等效于求交叉熵的最小值。（也等效于求最大似然估计）。所以，交叉熵可以被用来作损失函数。</p>
-<p><img src="https://github.com/Alex-lubo/CodeSnippets/blob/master/ML/CrossEntropy-MSE.png?raw=true" alt=""></p>
-<p>对于分类问题的最优化，比如适合LR方法的问题，如上图所示，期望为1时，如果模型预测值为0时，误差函数为交叉熵时，惩罚项的值会增加到无穷大，而如果误差函数为MSE时，惩罚项的值也才等于1。这使得交叉熵更适合作为该类问题的损失函数。</p>
-<p>TensorFlow针对分类问题，实现了四个交叉熵函数，分别是</p>
-<ul>
-<li>tf.nn.sigmoid_cross_entropy_with_logits<blockquote>
-<p>标准的Cross Entropy算法实现。函数输入为logits和targets，targets就是正确的label值，logits为（W*X+b），<strong>不需要</strong>经过sigmoid。logits和labels必须为相同type和shape。比如判断100张图中<strong>是否</strong>包含5种动物，shape为[100,5]。需要知道，经过sigmoid函数后，预测值就限制在0~1之间。因此，此函数只在二分问题（Yes-No）的多目标任务（类别之间是独立的，不要求互斥）中使用，不适用于多分类问题（如识别手写数字）。</p>
-<p>tensorflow中实现：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; x=logits, z=labels</span><br><span class="line">&gt; z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; = z * -log(1 / (1 + exp(-x))) + (1 - z) * -log(exp(-x) / (1 + exp(-x)))</span><br><span class="line">&gt; = z * log(1 + exp(-x)) + (1 - z) * (-log(exp(-x)) + log(1 + exp(-x)))</span><br><span class="line">&gt; = z * log(1 + exp(-x)) + (1 - z) * (x + log(1 + exp(-x))</span><br><span class="line">&gt; = (1 - z) * x + log(1 + exp(-x))</span><br><span class="line">&gt; = x - x * z + log(1 + exp(-x))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
-</blockquote>
-</li>
-</ul>
-<blockquote>
-<p>为保证稳定性和防止溢出，实际实现时采用如下方程式来计算。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; max(x, 0) - x * z + log(1 + exp(-abs(x)))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></p>
-</blockquote>
-<ul>
-<li><p>tf.nn.softmax_cross_entropy_with_logits_v2</p>
-<blockquote>
-<p>为了在多分类任务（label的可能值大于2）中使用交叉熵，就要使用Softmax算法。它是把所有的值用自然指数计算，求和后计算每个值占的比率，保证总和为1。softmax要求每个样本必须属于某个输出类别，并且样本要求覆盖所有的类别。函数会返回C个分量的概率向量，每个分量对应于一个输出类别的概率，如果各分量之和小于1，意味着有一些隐藏的类别，如果分量之和大于1表示每个样本可能属于多个类别。该函数适用于多分类问题。<br>该问题的输出需要C个，所以与sigmoid_cross_entropy_with_logits方法不同，它需要C个不同的权值组。每组对应一个可能的输出。<br>类别必须是互斥的，但是概率不是。label的每行表示为属于各类的概率，给类别概率总和为1（或者对类别做onehot encoding）。如果使用互斥标签，即每次只有一个类别为true时，使用sparse_softmax_cross_entropy_with_logits。<br>logits和labels必须为相同的类型和shape，如[batch_size, num_classes]<br>为避免混淆，需传递命名参数。</p>
-</blockquote>
-</li>
-<li><p>tf.nn.sparse_softmax_cross_entropy_with_logits</p>
-<blockquote>
-<p>是softmax_cross_entropy_with_logits的易用版本，除了输入参数不同，作用和算法实现都是一样的。logits和labels的shape可以不一样，一般logits的shape为[batch_size, num_classes],labes的shape为[batch_size],labels中的每个值的范围为(0, num_classes)，步长为1，如果步长大于1或者从1开始，某些label值会超过这个范围，代码会直接报错退出.</p>
-</blockquote>
-</li>
-<li><p>tf.nn.weighted_cross_entropy_with_logits</p>
-<blockquote>
-<p>是sigmoid_cross_entropy_with_logits的拓展版，输入参数和实现和后者差不多，可以多支持一个pos_weight参数，目的是可以增加或者减小正样本在算Cross Entropy时的Loss。</p>
-<blockquote>
-<p>tensorflow中实现：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; x=logits, z=labels</span><br><span class="line">&gt; cross-entropy的计算为：</span><br><span class="line">&gt; z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; weighted_cross_entropy的计算公式为：</span><br><span class="line">&gt; z * -log(sigmoid(x))*pos_weight + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; ...</span><br><span class="line">&gt; = (1-z)*x + (1 + (q -1)*z)*log(1 + exp(-x))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
-</blockquote>
-</blockquote>
-</li>
-</ul>
-<blockquote>
-<p>set s=(1+(q-1)*z)为保证稳定性和防止溢出，实际实现时采用如下方程式来计算。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; max(-x, 0) + x * (1 - z) + s*(log(1 + exp(-abs(x)))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></p>
-</blockquote>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上是TensorFlow目前提供的有关Cross Entropy的函数实现，用户需要理解多目标和多分类的场景，根据业务需求（分类目标是否独立和互斥）来选择基于sigmoid或者softmax的实现。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/05/30/Tensorflow损失函数的用法小结/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1144,7 +1061,7 @@ OEM_DEFAULT                    Default, based on what is available.
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2018 alex lu
+    		&copy; 2019 alex lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

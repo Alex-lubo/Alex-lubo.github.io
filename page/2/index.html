@@ -156,6 +156,608 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-统计语言模型" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/12/统计语言模型/">统计语言模型</a>
+    </h1>
+  
+
+        
+        <a href="/2018/06/12/统计语言模型/" class="archive-article-date">
+  	<time datetime="2018-06-12T03:04:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>从文本、图片、语音和视屏数据中提取挖掘有价值的信息，离不开自然语言处理（NLP）。而统计语言模型(Statistical Language Model)是很重要的一环，它是所有NLP的基础，被广泛的应用于语音识别、机器翻译、分词、词性标注和信息检索等任务。</p>
+<p>比如，在语音识别系统中，对于给定的语音段Ｖoice，需要找到一个使得概率<a><img src="https://latex.codecogs.com/gif.latex?p(Text|Voice)"></a>最大的文本段Text，　利用Bayes公式，有:</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?p(Text|Voice)&space;=&space;\frac{p(Voice|Text)p(Text)}{p(Voice)}"></a></p>
+<p>其中，ｐ(Voice|Text)为声学模型，p(Text)为语言模型。</p>
+<p>统计语言模型简单的说，就是用来计算一个句子概率的统计模型。通常基于一个语料库来构建。一个句子有Ｔ个词（w1,w2、…、wT）,则句子的概率就相当于这Ｔ个词按先后顺序同时出现的联合概率为：</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?p(W)=p(w^{T})=p(w_{1},w_{2},...,w_{T})=p(w_{1})p(w_{2}|w_{1})p(w_{3}|w_{1},w_{2})...p(w_{T}|w_{1},...,w_{T-1})"></a></p>
+<p>可见，如果字符串长度为T，那么对每一种可能（假如N种）模型的参数数量就是T，所以统计时计算量会非常大，理论计算量就是TN^T。<br>模型很简单，计算也很简单，就是计算量太大，操作性太差。于是有了很多近似计算这个概率的办法，比如n-gram, 决策树，最大熵模型，最大熵马尔科夫模型，条件随机场，神经网络等。</p>
+<h3 id="n-gram模型"><a href="#n-gram模型" class="headerlink" title="n-gram模型"></a>n-gram模型</h3><p>基本思想就是：一个词出现的概率只与它前面的ｎ-1个词相关（Markov假设）。</p>
+<p>首先思考<a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})"></a>的计算。根据Bayes:</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})&space;=&space;\frac{p(w_{1},...,w_{k})}{p(w_{1},...,w_{k-1})}"></a></p>
+<p>当语料库足够大时，可以根据大数定理，近似的计算上式子：<br><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})&space;=&space;\frac{p(w_{1},...,w_{k})}{p(w_{1},...,w_{k-1})}\approx&space;\frac{Count(w_{1},...,w_{k})}{Count(w_{1},...,w_{k-1})}"></a></p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k})"></a>和<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k-1})"></a>表示两个词串在语料库中出现的次数。当ｋ很大时，<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k})"></a>和<a><img src="https://latex.codecogs.com/gif.latex?Count(w_{1},...,w_{k-1})"></a>的统计就会非常费时。</p>
+<p>为了简化这种统计，俄罗斯数学家Markov提出了一个假设：那就是一个词出现的概率只与前面固定的数目(比如n)的词相关，那么上述统计可以简化为：<br><a><img src="https://latex.codecogs.com/gif.latex?p(w_{k}|w_{1},...,w_{k-1})\approx&space;p(w_{k}|w_{k-n&plus;1},...,w_{k-1})=\frac{p(w_{k-n&plus;1},...,w_{k})}{p(w_{k-n&plus;1},...,w_{k-1})}\approx&space;\frac{Count(w_{k-n&plus;1},...,w_{k-1}}{Count(w_{k-n&plus;1},...,w_{k-1}}"></a></p>
+<p>那么现在，单个参数的统计变的容易，参数的总数也变少了。语言模型p(Text)的计算可以以一种简单的方式很快计算完成。</p>
+<h3 id="词向量"><a href="#词向量" class="headerlink" title="词向量"></a>词向量</h3><p>将自然语言交个计算机处理，首先需要将语言数字化。词向量就是一种很好的方式。</p>
+<p>One-hot Representation是一种，实现就是根据字典中的词，然后对应句子，存在的词值1，不存在的全为0. 它不能很好的刻画词与词之间的相似性，而且容易受维数灾难的困扰。</p>
+<p>Distributated Representation是另一种词向量，可以克服One-hot词向量的问题，并可以很好的用在深度学习的场景中。实现方法：将语言中的每个词映射成一个固定长度的短向量，这些向量构成一个词向量空间，向量的距离来判断它们之间的相似性。word2vec就是一种生成词向量的方法.</p>
+<h3 id="word2vec"><a href="#word2vec" class="headerlink" title="word2vec"></a>word2vec</h3><p>word2vec有两种生成方式:CBOW和Skip-Gram.</p>
+<p>关于CBOW和Skip-Gram,下一篇文章再讲吧.</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/12/统计语言模型/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Tensorflow-算法步骤" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/08/Tensorflow-算法步骤/">Tensorflow:算法步骤</a>
+    </h1>
+  
+
+        
+        <a href="/2018/06/08/Tensorflow-算法步骤/" class="archive-article-date">
+  	<time datetime="2018-06-08T03:52:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>使用Tensorflow进行算法设计、训练可以分成四个步骤：</p>
+<ol>
+<li>定义算法公式，也就是神经网络forward的计算</li>
+<li>定义loss-function，指定对loss进行优化的优化器</li>
+<li>模型训练。</li>
+<li>在测试集或验证集上对准确率进行评估。</li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/08/Tensorflow-算法步骤/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Tensorflow搭建CNN进行图形识别-1-实现" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/">基于Tensorflow搭建CNN进行图形识别(1)-实现</a>
+    </h1>
+  
+
+        
+        <a href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/" class="archive-article-date">
+  	<time datetime="2018-06-06T02:48:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-06</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>根据基础的介绍，对CNN的卷积，常见层（非线性，池化，全连接等），图像加载，图像操作和颜色空间等相关知识做了了解。下面就是要把这些知识串联用起来，来实现一个简单的图像目标识别和分类的CNN。CNN的网络架构有很多种，这里实现采用AlexNet（2012年ILSVRC冠军）的简化版。<br>网络架构：</p>
+<div><br>  <div>Stanford Dogs DataSet</div><br>  <div>Conv Layer1</div><br>  <div>pool layer1</div><br>  <div>Conv Layer2<br>  <div>pool layer2</div><br>  <div>Dropout</div><br>  <div>Hidden</div><br>  <div>fc<br></div>
+
+<p>可以基于AlexNet的基础，我们搭建一个简单的CNN：有2个卷积层，两个全连接层（其中一个softmax）。</p>
+<p>过程如下：<br>因为需要对多层需要对权重值和偏置值进行初始化，先定义两个初始化函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">weight_initializer</span><span class="params">(shape)</span>:</span></span><br><span class="line">  initial = tf.truncated_normal(shape, stddev=<span class="number">0.1</span>)</span><br><span class="line">  <span class="keyword">return</span> tf.Variable(initial)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bias_initializer</span><span class="params">(shape)</span>:</span></span><br><span class="line">  initial = tf.constant(<span class="number">0.1</span>, shape=shape)</span><br><span class="line">  <span class="keyword">return</span> tf.Variable(initial)</span><br></pre></td></tr></table></figure></p>
+<p>然后定义卷积操作和max_pool操作的函数。</p>
+<p>卷积操作的设置长宽方向的步长均为1，即strides=[1，1,1,1]，如果要设置长宽方向的步长分别为2,3的话，strides就等于[1,2,3,1],<a href="https://www.tensorflow.org/versions/master/api_docs/python/tf/nn/conv2d" target="_blank" rel="noopener">具体参考tensorflow的官方说明.</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">conv2d</span><span class="params">(x, kernel)</span>:</span></span><br><span class="line">  <span class="keyword">return</span> tf.nn.conv2d(</span><br><span class="line">    x, </span><br><span class="line">    kernel, </span><br><span class="line">    strides=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], </span><br><span class="line">    padding=<span class="string">'SAME'</span></span><br><span class="line">  )</span><br></pre></td></tr></table></figure></p>
+<p>池化操作采用max_pool，池化操作的核大小为2，步长为2.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">max_pool_2x2</span><span class="params">(x)</span>:</span></span><br><span class="line">  <span class="keyword">return</span> tf.nn.max_pool(</span><br><span class="line">    x,</span><br><span class="line">    ksize=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>],</span><br><span class="line">    strides=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>],</span><br><span class="line">    padding=<span class="string">'SAME'</span></span><br><span class="line">  )</span><br></pre></td></tr></table></figure></p>
+<p><strong>CNN网络结构定义</strong><br>样本参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x_width = <span class="number">28</span>    <span class="comment"># 输入图片的宽度</span></span><br><span class="line">x_height = <span class="number">28</span>   <span class="comment"># 输入图片的高度</span></span><br><span class="line">x_channel = <span class="number">1</span>   <span class="comment"># 输入图片的颜色通道数</span></span><br><span class="line">class_num = <span class="number">10</span>  <span class="comment"># 样本种类</span></span><br></pre></td></tr></table></figure></p>
+<p>输入参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = tf.placeholder(tf.float32, [<span class="keyword">None</span>, x_width, x_height, x_channel])</span><br><span class="line">y_ = tf.placeholder(tf.float32, [<span class="keyword">None</span>, class_num])</span><br><span class="line">keep_prob = tf.placeholder(tf.float32)</span><br></pre></td></tr></table></figure></p>
+<p>定义卷积层<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Converlution_Layer_1'</span>):</span><br><span class="line">  conv1_k_size = <span class="number">5</span>      <span class="comment"># 卷积核大小 5x5</span></span><br><span class="line">  conv1_filter_num = <span class="number">32</span> <span class="comment"># 滤波器个数，也就是想要抽取的特征数</span></span><br><span class="line">  conv1_channel = x_channel</span><br><span class="line">  W_conv1 = weight_initializer([conv1_k_size, conv1_k_size, conv1_channel, conv1_filter_num])</span><br><span class="line">  b_conv1 = bias_initializer([conv1_filter_num])</span><br><span class="line">  h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1)     <span class="comment"># 隐藏层</span></span><br><span class="line">  pool_conv1 = max_pool_2x2(h_conv1)                     <span class="comment"># pool层</span></span><br><span class="line">  map_size = x_width/<span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Converlution_Layer_2'</span>):</span><br><span class="line">  conv2_k_size = <span class="number">5</span></span><br><span class="line">  conv2_filter_num = <span class="number">64</span></span><br><span class="line">  conv2_channel = conv1_filter_num</span><br><span class="line">  W_conv2 = weight_initializer([conv2_k_size, conv2_k_size, conv2_channel, conv2_filter_num])</span><br><span class="line">  b_conv2 = bias_initializer([conv2_filter_num])</span><br><span class="line">  h_conv2 = tf.nn.relu(conv2d(pool_conv1, W_conv2) + b_conv2)</span><br><span class="line">  pool_conv2 = max_pool_2x2(h_conv2)</span><br><span class="line">  map_size = map_size/<span class="number">2</span></span><br></pre></td></tr></table></figure></p>
+<p>定义全连接层<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Fully_Connected_1'</span>):</span><br><span class="line">  nodes_num_fc1 = <span class="number">1024</span>    <span class="comment"># 隐含节点数</span></span><br><span class="line">  features_size_fc1 = map_size * map_size * conv2_filter_num</span><br><span class="line">  W_fc1 = weight_initializer([features_size_fc1, nodes_num_fc1])</span><br><span class="line">  b_fc1 = bias_initializer([nodes_num_fc1])</span><br><span class="line">  pool2_flat = tf.reshape(pool_conv2, [<span class="number">-1</span>, features_size_fc1])</span><br><span class="line">  h_fc1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)</span><br><span class="line">  drop_fc1 = tf.nn.dropout(h_fc1, keep_prob)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'Softmax_Regression'</span>):</span><br><span class="line">  W_fc2 = weight_initializer([nodes_num_fc1, class_num])</span><br><span class="line">  b_fc2 = bias_initializer([class_num])</span><br><span class="line">  y_predict = tf.nn.softmax(tf.matmul(drop_fc1, W_fc2) + b_fc2)</span><br></pre></td></tr></table></figure></p>
+<p>定义训练方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">learning_rate = <span class="number">1e-3</span></span><br><span class="line">training_steps = <span class="number">4000</span></span><br><span class="line">loss_corss_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_predict), reduction_indices=[<span class="number">1</span>]))</span><br><span class="line">train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss_corss_entropy)</span><br></pre></td></tr></table></figure></p>
+<p>定义评估方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prediction = tf.equal(tf.argmax(y_predict, <span class="number">1</span>), tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))</span><br></pre></td></tr></table></figure></p>
+<p>最后是训练和效果评估过程<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># training</span></span><br><span class="line">tf.global_variables_initializer().run()</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(training_steps):</span><br><span class="line">  train_x, train_y = input_train()</span><br><span class="line">  <span class="keyword">if</span> i % <span class="number">100</span> == <span class="number">0</span>:</span><br><span class="line">    print(</span><br><span class="line">      <span class="string">'step %d accuracy is %g'</span> %(i, accuracy.eval(feed_dict=&#123;x: train_x, y_: train_y, keep_prob: <span class="number">1.</span>&#125;))</span><br><span class="line">    )</span><br><span class="line">  train_step.run(feed_dict=&#123;x: train_x, y_: train_y, keep_prob:<span class="number">0.75</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># evaluation </span></span><br><span class="line">test_x, test_y = input_test()</span><br><span class="line">print(<span class="string">'test accuracy is %g'</span> % accuracy.eval(feed_dict=&#123;x: test_x, y_: test_y, keep_prob: <span class="number">1.0</span>&#125;))</span><br></pre></td></tr></table></figure></p>
+<p>可以使用手写数据mnist来输入进行训练和评估。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line">mnist = input_data.read_data_sets(<span class="string">'MNIST_data'</span>,one_hot=<span class="keyword">True</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">input_train</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="string">"""</span></span><br><span class="line"><span class="string">  add your input procedure to import training data</span></span><br><span class="line"><span class="string">  """</span></span><br><span class="line">  batch = mnist.train.next_batch(<span class="number">50</span>)</span><br><span class="line">  x = np.reshape(batch[<span class="number">0</span>], [<span class="number">-1</span>, <span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>])</span><br><span class="line">  <span class="keyword">return</span> x, batch[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">input_test</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="string">"""</span></span><br><span class="line"><span class="string">  add your input procedure to import testing data</span></span><br><span class="line"><span class="string">  """</span></span><br><span class="line">  test_x = np.reshape(mnist.test.images, [<span class="number">-1</span>, <span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>])</span><br><span class="line">  <span class="keyword">return</span> test_x, mnist.test.labels</span><br></pre></td></tr></table></figure></p>
+<p>当然也可在input_train和input_test中添加自己的数据输入资料来训练。</p>
+</div></div>
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/06/Tensorflow搭建CNN进行图形识别-1-实现/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Tensorflow搭建CNN进行图形识别-1-基础" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/">基于Tensorflow搭建CNN进行图形识别(1)-基础</a>
+    </h1>
+  
+
+        
+        <a href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/" class="archive-article-date">
+  	<time datetime="2018-06-04T08:18:47.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-06-04</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>自从2012年的ImageNet举行的大规模视觉识别挑战赛（ILSVRC）以来，CNN（卷积神经网络，不是指某新闻资讯频道）在计算机视觉领域取得的空前准确性使之一直为人们所持续关注。我想自己做点图像识别方向的小东西，目前在为实现积攒技术，比如学习tf、opencv等。本篇文章记录下采用tf搭建CNN的过程，记录自己的实际操作过程。有些理论的东西就直接搬过来了，以对抗遗忘。</p>
+<p>个人写博客，就是写给自己，目前水平有限，不敢说指导别人了，纯粹就当自己的读书笔记了。</p>
+<p>好了，言归正传，要搭建CNN，首先要了解什么是CNN。CNN（卷积神经网络）是一种至少包含一个卷积层的神经网络，该层使计算输入f与一组可配置的卷积核g的卷积。<a href="https://zhuanlan.zhihu.com/p/31554961" target="_blank" rel="noopener">知乎上红色石头的机器学习之路</a>已经对卷积神经网络的基础做出了图文并茂的解释，所以这部分内容可以参考，如果E文比较好的话直接上coursera上看Andrw Ng的课程。就不在炒冷饭了（写的可能还没它的好）。</p>
+<p><strong>CNN的组成:</strong></p>
+<ul>
+<li>图像输入</li>
+<li>卷积层<ul>
+<li>conv2d</li>
+<li>depthwise_conv2d</li>
+<li>separable_conv2d</li>
+<li>conv2d_transpose</li>
+<li>LRN<ul>
+<li>效果不好，目前用的少</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>激活函数:<ul>
+<li>relu<ul>
+<li>计算量小，速度快</li>
+<li>在小于0时，梯度无法计算，容易导致神经元“死亡”</li>
+</ul>
+</li>
+<li>修正relu</li>
+<li>sigmoid[0.0, 1.0]<ul>
+<li>压缩函数，饱和区梯度接近0，容易出现梯度消失</li>
+<li>指数计算量大</li>
+<li>非对称</li>
+</ul>
+</li>
+<li>tanh[-1.0, 1.0]<ul>
+<li>对称</li>
+</ul>
+</li>
+<li>dropout</li>
+</ul>
+</li>
+<li>池化层<ul>
+<li>max_pool</li>
+<li>avg_pool</li>
+</ul>
+</li>
+<li>全连接层<ul>
+<li>fully_connected</li>
+</ul>
+</li>
+</ul>
+<p><strong>图像操作：</strong></p>
+<ul>
+<li>裁剪<ul>
+<li>tf.image.central_crop()</li>
+<li>tf.image.crop_to_bounding_box()</li>
+<li>tf.slice()</li>
+</ul>
+</li>
+<li>边界填充<ul>
+<li>tf.image.pad_to_bounding_box()</li>
+<li>tf.image.resize_image_with_crip_or_pad()</li>
+</ul>
+</li>
+<li>翻转<ul>
+<li>tf.image.flip_left_rigth()</li>
+<li>tf.image.flip_up_down()</li>
+<li>tf.image.random_flip_left_right()</li>
+<li>tf.image.random_flip_up_down()</li>
+</ul>
+</li>
+<li>饱和平衡<ul>
+<li>tf.image.adjust_brightness()</li>
+<li>tf.image.adjust_contrast()</li>
+<li>tf.image.adjust_saturation()</li>
+</ul>
+</li>
+</ul>
+<p><strong>颜色转换</strong></p>
+<ul>
+<li>灰度<ul>
+<li>tf.image.rgb_to_grayscale()<blockquote>
+<p>每个像素的所有颜色值取平均，将其作为灰度值来实现。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>HSV(HSB)空间<ul>
+<li>tf.image.rgb_to_hsv()</li>
+</ul>
+</li>
+<li>RGB<ul>
+<li>tf.image.grayscale_to_rgb()<blockquote>
+<p>意义不大。只是将灰度值作为RGB来填充得到。</p>
+</blockquote>
+</li>
+<li>tf.image.hsv_to_rgb()</li>
+</ul>
+</li>
+<li>LAB空间</li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/06/04/Tensorflow搭建CNN进行图形识别-1-基础/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-pandas使用小结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/31/pandas使用小结/">‘pandas使用小结’</a>
+    </h1>
+  
+
+        
+        <a href="/2018/05/31/pandas使用小结/" class="archive-article-date">
+  	<time datetime="2018-05-31T09:32:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-05-31</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Pandas处理以下三种数据结构：</p>
+<ul>
+<li><p>Series</p>
+<blockquote>
+<p>相同数据类型的一维数组结构。</p>
+</blockquote>
+</li>
+<li><p>DataFrame</p>
+<blockquote>
+<p>具有异构数据的二维数据结构。</p>
+</blockquote>
+</li>
+<li><p>Panel</p>
+<blockquote>
+<p>具有异构数据的三维数据结构。</p>
+</blockquote>
+</li>
+</ul>
+<p>简单理解三者的关系就是： DataFrame是Series的容器，Panel是DataFrame的容器。</p>
+<h2 id="read-csv"><a href="#read-csv" class="headerlink" title="read_csv"></a>read_csv</h2><p>如iris_training.csv文件内数据格式为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">120,4,setosa,versicolor,virginica</span><br><span class="line">6.4,2.8,5.6,2.2,2</span><br><span class="line">5.0,2.3,3.3,1.0,1</span><br><span class="line">4.9,2.5,4.5,1.7,2</span><br><span class="line">4.9,3.1,1.5,0.1,0</span><br><span class="line">5.7,3.8,1.7,0.3,0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>使用pandas可以读入数据到DataFrame。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import pandas as pd</span><br><span class="line"></span><br><span class="line">train_df = pd.read_csv(&apos;./iris_training.csv&apos;)</span><br><span class="line">print train_df</span><br></pre></td></tr></table></figure></p>
+<p>输出为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">     120    4  setosa  versicolor  virginica</span><br><span class="line">0    6.4  2.8     5.6         2.2          2</span><br><span class="line">1    5.0  2.3     3.3         1.0          1</span><br><span class="line">2    4.9  2.5     4.5         1.7          2</span><br><span class="line">3    4.9  3.1     1.5         0.1          0</span><br><span class="line">4    5.7  3.8     1.7         0.3          0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>可以在读入时制定列名和列数据的类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">column_names = [&apos;sepel_length&apos;, &apos;sepel_width&apos;, &apos;petal_length&apos;,&apos;petal_width&apos;, &apos;label&apos;]</span><br><span class="line">  type = &#123;</span><br><span class="line">    &apos;sepel_length&apos;:np.float, &apos;sepel_width&apos;:np.float, &apos;petal_length&apos;:np.float,&apos;petal_width&apos;:np.float, &apos;label&apos;:np.int</span><br><span class="line">  &#125;</span><br><span class="line">train_df = pd.read_csv(&apos;./iris_training.csv&apos;，names=column_names, dtype=data_type，header=0)</span><br></pre></td></tr></table></figure></p>
+<p>输出变为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">     sepel_length  sepel_width  petal_length  petal_width  label</span><br><span class="line">0             6.4          2.8           5.6          2.2      2</span><br><span class="line">1             5.0          2.3           3.3          1.0      1</span><br><span class="line">2             4.9          2.5           4.5          1.7      2</span><br><span class="line">3             4.9          3.1           1.5          0.1      0</span><br><span class="line">4             5.7          3.8           1.7          0.3      0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/05/31/pandas使用小结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Tensorflow损失函数的用法小结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/30/Tensorflow损失函数的用法小结/">Tensorflow损失函数的用法小结</a>
+    </h1>
+  
+
+        
+        <a href="/2018/05/30/Tensorflow损失函数的用法小结/" class="archive-article-date">
+  	<time datetime="2018-05-30T08:47:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-05-30</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在进行机器学习时，一般的过程是，根据问题的特征（样本参数）建立模型，当输入特征参数到模型中时，可以获得与实际测量结果相同或者相近的计算结果。开始时并不知道模型应该使用什么样的参数，只能通过给定结果的训练数据集，对模型进行训练，使得模型计算结果与实际测量结果相同或者接近，用数据表示就是损失函数。对模型进行优化的过程其实就是在求损失函数最小值的过程。</p>
+<p>常用的损失函数有MSE，交叉熵。Tensorflow提供了不同损失函数的实现。下面简要介绍总结一下Tensorflow中MSE和交叉熵损失函数的用法。</p>
+<h2 id="MSE"><a href="#MSE" class="headerlink" title="MSE"></a>MSE</h2><p>常见的Loss函数时MSE（Mean squared Error）.计算方法如下：</p>
+<p>均方差很好理解，就是反映预测值与真实值之间的差异情况。为避免负值，一般取绝对值或者平方。</p>
+<p><a href="https://www.codecogs.com/eqnedit.php?latex=L&space;=&space;\frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?L&space;=&space;\frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}" title="L = \frac{1}{n}\sum_{k=1}^{n}(y_{k}-y_{k}^{'})^{2}"></a></p>
+<p><code>Y</code>表示真实值，<code>Y‘</code>表示预测值。</p>
+<p>在tensorflow中表达MSE：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line"></span><br><span class="line">Y_ = tf.matmul(X, W) + b</span><br><span class="line">tf.reduce_mean(tf.squared_difference(Y, Y_))</span><br></pre></td></tr></table></figure></p>
+<p>MSE可以表达预测值与真实值之间的差异，但是在分类问题中效果不如交叉熵好。</p>
+<h2 id="交叉熵"><a href="#交叉熵" class="headerlink" title="交叉熵"></a>交叉熵</h2><p>1948年，Claude Shannon在他的著名论文（A Mathematic Theory of Communication）中提出信息熵的概念来对信息进行度量。信息的信息量与其不确定性有直接的关系。如果对某件事一无所知，那么就需要大量的信息，如果一件事情百分百确定，那么给出的再多信息都没有信息量。所以，信息量就等于不确定性的多少。</p>
+<p>信息熵的定义：</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?H(X)=-\sum_{x\in&space;X}P(x)lnP(x)" title="H(X)=-\sum_{x\in X}P(x)logP(x)"></a></p>
+<p>其定义形式与热力学的熵有很大的相似性。</p>
+<p>在信息论中，若一个符号字符串中每个字符出现概率<code>Pi</code>已知，就利用信息熵估计该字符串中每个符号<code>Si</code>编码所需的平均最小位数，其意义是，采用最优编码方案是，每个字符号需要的bit位。比如要对’helloworld‘这个字符串进行编码，可以先计算每个字符出现的概率，然后计算信息熵。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">P(&apos;h&apos;) = P(&apos;e&apos;) = P(&apos;w&apos;) =P(&apos;r&apos;) = P(&apos;d&apos;) = 1/10 = 0.1</span><br><span class="line">P(&apos;o&apos;) = 2/10 = 0.2</span><br><span class="line">P(&apos;l&apos;) = 3/10 = 0.3</span><br><span class="line">H = -0.3*log(0.3)-0.2*log(0.2)-5*0.1*log(0.1)≈2.646≈3</span><br></pre></td></tr></table></figure></p>
+<p>采用最优化编码方式来进行编码时每个符号需要3bit。</p>
+<p>要了解交叉熵，首先了解下相对熵（kullback-leibler divergence）。</p>
+<p>相对熵是用来衡量两个取值为正数的函数的相似性，这与变量的互信息不同（互信息是用来表示，在了解其中一个变量的情况下，对消除另一个X不确定性所提供的信息量，类似于条件概率）。交叉熵的公式表达为：</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?KL(f(x)||q(x))=\sum_{x\in&space;X}f(x)log\frac{f(x)}{q(x)}=-\sum_{x\in&space;X}f(x)log&space;q(x)&plus;\sum_{x\in&space;X}f(x)logf(x)" title="KL(f(x)||q(x))=\sum_{x\in X}f(x)log\frac{f(x)}{q(x)}=-\sum_{x\in X}f(x)log q(x)+\sum_{x\in X}f(x)logf(x)"></a></p>
+<p>关于相对熵，有三条结论：</p>
+<ul>
+<li>完全相同的函数，交叉熵等于0</li>
+<li>相对熵越大，两个函数的差异就越大；交叉熵越小，两个函数的差异越小，</li>
+<li>对于概率分布或者概率密度函数，如果取值均大于0，相对熵可以度量两个随机分布的差异性。</li>
+</ul>
+<p>如果<code>f(x)</code>是数据的真实概率分布，<code>q(x)</code>是由数据计算得到的概率分布。这样公式的前半部分是一个常数。当<code>q(x)</code>和<code>f(x)</code>越趋近相同，则相对熵越趋近于最小值（0）。</p>
+<p>相对熵的前半部分，就是交叉熵。当相对熵趋近于最小值也就是交叉熵趋近于最小值。</p>
+<p><a><img src="https://latex.codecogs.com/gif.latex?H=-\sum_{x\in&space;X}f(x)log&space;q(x)" title="H=-\sum_{x\in X}f(x)log q(x)"></a></p>
+<p><code>f(x)</code>一般为数据的真实概率（比如样本的真实值），<code>q(x)</code>为计算的得到的概率分布（预测值），机器学习的目的就是希望<code>q(x)</code>尽可能的逼近<code>f(x)</code>，因此对<code>q(x)</code>的优化就等效于求交叉熵的最小值。（也等效于求最大似然估计）。所以，交叉熵可以被用来作损失函数。</p>
+<p><img src="https://github.com/Alex-lubo/CodeSnippets/blob/master/ML/CrossEntropy-MSE.png?raw=true" alt=""></p>
+<p>对于分类问题的最优化，比如适合LR方法的问题，如上图所示，期望为1时，如果模型预测值为0时，误差函数为交叉熵时，惩罚项的值会增加到无穷大，而如果误差函数为MSE时，惩罚项的值也才等于1。这使得交叉熵更适合作为该类问题的损失函数。</p>
+<p>TensorFlow针对分类问题，实现了四个交叉熵函数，分别是</p>
+<ul>
+<li>tf.nn.sigmoid_cross_entropy_with_logits<blockquote>
+<p>标准的Cross Entropy算法实现。函数输入为logits和targets，targets就是正确的label值，logits为（W*X+b），<strong>不需要</strong>经过sigmoid。logits和labels必须为相同type和shape。比如判断100张图中<strong>是否</strong>包含5种动物，shape为[100,5]。需要知道，经过sigmoid函数后，预测值就限制在0~1之间。因此，此函数只在二分问题（Yes-No）的多目标任务（类别之间是独立的，不要求互斥）中使用，不适用于多分类问题（如识别手写数字）。</p>
+<p>tensorflow中实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; x=logits, z=labels</span><br><span class="line">&gt; z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; = z * -log(1 / (1 + exp(-x))) + (1 - z) * -log(exp(-x) / (1 + exp(-x)))</span><br><span class="line">&gt; = z * log(1 + exp(-x)) + (1 - z) * (-log(exp(-x)) + log(1 + exp(-x)))</span><br><span class="line">&gt; = z * log(1 + exp(-x)) + (1 - z) * (x + log(1 + exp(-x))</span><br><span class="line">&gt; = (1 - z) * x + log(1 + exp(-x))</span><br><span class="line">&gt; = x - x * z + log(1 + exp(-x))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</li>
+</ul>
+<blockquote>
+<p>为保证稳定性和防止溢出，实际实现时采用如下方程式来计算。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; max(x, 0) - x * z + log(1 + exp(-abs(x)))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<ul>
+<li><p>tf.nn.softmax_cross_entropy_with_logits_v2</p>
+<blockquote>
+<p>为了在多分类任务（label的可能值大于2）中使用交叉熵，就要使用Softmax算法。它是把所有的值用自然指数计算，求和后计算每个值占的比率，保证总和为1。softmax要求每个样本必须属于某个输出类别，并且样本要求覆盖所有的类别。函数会返回C个分量的概率向量，每个分量对应于一个输出类别的概率，如果各分量之和小于1，意味着有一些隐藏的类别，如果分量之和大于1表示每个样本可能属于多个类别。该函数适用于多分类问题。<br>该问题的输出需要C个，所以与sigmoid_cross_entropy_with_logits方法不同，它需要C个不同的权值组。每组对应一个可能的输出。<br>类别必须是互斥的，但是概率不是。label的每行表示为属于各类的概率，给类别概率总和为1（或者对类别做onehot encoding）。如果使用互斥标签，即每次只有一个类别为true时，使用sparse_softmax_cross_entropy_with_logits。<br>logits和labels必须为相同的类型和shape，如[batch_size, num_classes]<br>为避免混淆，需传递命名参数。</p>
+</blockquote>
+</li>
+<li><p>tf.nn.sparse_softmax_cross_entropy_with_logits</p>
+<blockquote>
+<p>是softmax_cross_entropy_with_logits的易用版本，除了输入参数不同，作用和算法实现都是一样的。logits和labels的shape可以不一样，一般logits的shape为[batch_size, num_classes],labes的shape为[batch_size],labels中的每个值的范围为(0, num_classes)，步长为1，如果步长大于1或者从1开始，某些label值会超过这个范围，代码会直接报错退出.</p>
+</blockquote>
+</li>
+<li><p>tf.nn.weighted_cross_entropy_with_logits</p>
+<blockquote>
+<p>是sigmoid_cross_entropy_with_logits的拓展版，输入参数和实现和后者差不多，可以多支持一个pos_weight参数，目的是可以增加或者减小正样本在算Cross Entropy时的Loss。</p>
+<blockquote>
+<p>tensorflow中实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; x=logits, z=labels</span><br><span class="line">&gt; cross-entropy的计算为：</span><br><span class="line">&gt; z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; weighted_cross_entropy的计算公式为：</span><br><span class="line">&gt; z * -log(sigmoid(x))*pos_weight + (1 - z) * -log(1 - sigmoid(x))</span><br><span class="line">&gt; ...</span><br><span class="line">&gt; = (1-z)*x + (1 + (q -1)*z)*log(1 + exp(-x))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<blockquote>
+<p>set s=(1+(q-1)*z)为保证稳定性和防止溢出，实际实现时采用如下方程式来计算。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; max(-x, 0) + x * (1 - z) + s*(log(1 + exp(-abs(x)))</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上是TensorFlow目前提供的有关Cross Entropy的函数实现，用户需要理解多目标和多分类的场景，根据业务需求（分类目标是否独立和互斥）来选择基于sigmoid或者softmax的实现。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/05/30/Tensorflow损失函数的用法小结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-React学习笔记(1)" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -649,572 +1251,6 @@
 
 
   
-    <article id="post-Basic-concept-of-Tensorflow-2" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/04/01/Basic-concept-of-Tensorflow-2/">Basic concept of Tensorflow(2)</a>
-    </h1>
-  
-
-        
-        <a href="/2018/04/01/Basic-concept-of-Tensorflow-2/" class="archive-article-date">
-  	<time datetime="2018-04-01T13:38:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-04-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Tensorflow-concepts"><a href="#Tensorflow-concepts" class="headerlink" title="Tensorflow concepts"></a>Tensorflow concepts</h1><ul>
-<li><p>Graph</p>
-<ul>
-<li>node: operation</li>
-<li><p>edge: tensor</p>
-<p>control dependencies</p>
-</li>
-</ul>
-</li>
-<li>Session</li>
-</ul>
-<p>在单个硬件设备的情况下,计算图会按照依赖关系被顺序执行.当一个节点的所有上游依赖被执行完成时(依赖数为0), 这个节点会被加入ready-queue以等待执行,同时,它下游的依赖数减1.</p>
-<p>当有多个硬件设备时, tensorflow有一套为节点分配设备的策略.这个策略的流程是:</p>
-<ol>
-<li><p>计算一个代价模型, 这个代价模型估算每一个节点的输入和输出tensor的大小,以及所需要计算的时间.</p>
-<p> 计算方法</p>
-<ul>
-<li>人工经验制定的启发式规则</li>
-<li>对一小部分数据进行实际计算测量得到</li>
-</ul>
-</li>
-<li>模拟执行计算整个计算图, 从起点开始,按照拓扑顺序执行.模拟执行一个节点时,会在所有能进行计算的设备上都测试一遍,这个测试所用的时间包括计算的时间和传送数据需要的通信时间,最后选择一个综合时间最短的设备作为这个节点的运算设备.</li>
-<li>内存的最高使用峰值也会被考虑进来</li>
-<li>允许用户对节点的分配设置限定条件.</li>
-</ol>
-<p>设备节点间的数据通信<br>当节点分别设备的方案被确定,整个计算图会被划分为许多子图,使用同一个设备并且相邻的节点会被划分到同一个子图.然后计算图中从x-y的边会被发送端的发送节点到接收端的接收节点的边取代.</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/04/01/Basic-concept-of-Tensorflow-2/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Tensorflow：Install-on-centOS-7" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/29/Tensorflow：Install-on-centOS-7/">Install Tensorflow on centOS 7(ML-1)</a>
-    </h1>
-  
-
-        
-        <a href="/2018/03/29/Tensorflow：Install-on-centOS-7/" class="archive-article-date">
-  	<time datetime="2018-03-29T14:40:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-29</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>准备动手实践机器学习的东西，目前也看了许多机器学习相关的书，感觉书看得再多没有实践的检验，怕自己的理解或许会出问题。<br>1, 数学太抽象，如果没有实践，你也很容易就忘记了，所以目的一就是通过实践加深理解和记忆；2， 许多书为了让人理解，数据和模型参数都会选的很简单的，真正的工作中数据的维数、数量的复杂度会远远比书上难， 所以需要编程实践区掌握这写算法，让算法落地。‘纸上得来终觉浅，须知此事要躬行’。所以为了提高学习的效率，以<a href="https://developers.google.com/machine-learning/crash-course/prereqs-and-prework?hl=zh-cn" target="_blank" rel="noopener">google的机器学习教程</a>为基础，察缺补漏，提高对机器学习的理解和实践能力。</p>
-<p>ML这些文章记录下自己的学习过程。<br>按照教程的前提条件和准备工作对照了一下，初级代数和基本数学知识还是可以的，编程能力吗之前使用的是JS，C++,C#，python偶尔使用。所以直接开始还是没有问题的。<br>那么问题来了，要实践，首先需要有环境吧。 so …<br>首先，搭建环境。自己的笔记本上是CentOS7系统，直接就在Centos上开始吧。<br>机器配置有独显，看下配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">～ lspci |grep -i vga</span><br><span class="line">01:00.0 VGA compatible controller: NVIDIA Corporation GT218M [NVS 3100M]</span><br><span class="line"></span><br><span class="line">～ nvidia-smi</span><br><span class="line">Thu Mar 29 22:43:19 2018       </span><br><span class="line">+------------------------------------------------------+                       </span><br><span class="line">| NVIDIA-SMI 340.104    Driver Version: 340.104        |                       </span><br><span class="line">|-------------------------------+----------------------+----------------------+</span><br><span class="line">| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |</span><br><span class="line">| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |</span><br><span class="line">|===============================+======================+======================|</span><br><span class="line">|   0  NVS 3100M           Off  | 0000:01:00.0     N/A |                  N/A |</span><br><span class="line">| N/A   58C    P0    N/A /  N/A |    323MiB /   511MiB |     N/A      Default |</span><br><span class="line">+-------------------------------+----------------------+----------------------+</span><br><span class="line">                                                                               </span><br><span class="line">+-----------------------------------------------------------------------------+</span><br><span class="line">| Compute processes:                                               GPU Memory |</span><br><span class="line">|  GPU       PID  Process name                                     Usage      |</span><br><span class="line">|=============================================================================|</span><br><span class="line">|    0            Not Supported                                               |</span><br><span class="line">+-----------------------------------------------------------------------------+</span><br><span class="line"></span><br><span class="line">~ glxinfo | grep rendering </span><br><span class="line">direct rendering: Yes</span><br><span class="line">    GL_NV_parameter_buffer_object2, GL_NV_path_rendering, </span><br><span class="line">    GL_NV_parameter_buffer_object2, GL_NV_path_rendering,</span><br></pre></td></tr></table></figure></p>
-<p>如果有独立显卡，需要安装驱动。关于安装NVIDIA显卡驱动，可以参考我的博文：CentOS 7 安装NVIDIA驱动。<br>在<a href="https://developer.nvidia.com/cuda-gpus" target="_blank" rel="noopener">NVIDIA上查看自己的GPU型号是否支持CUDA</a>.可以看出，我的笔记本的显卡虽然支持cuda，但是配置显卡。可以安装支持GPU运算的Tenorflow。要使用GPU，需要安装CUDA TOOlkit。</p>
-<ol>
-<li><p>安装CUDA</p>
-<ul>
-<li><p>因为我的机器显卡实在是老旧，虽然也可以装cuda，正常的步骤是：下载对应的版本。从NVIDIA的<a href="https://developer.nvidia.com/cuda-downloads?target_os=Linux&amp;target_arch=x86_64&amp;target_distro=CentOS&amp;target_version=7&amp;target_type=rpmlocal" target="_blank" rel="noopener">官网上下载CUDA</a>.安装说明也在网页上，按照说明安装。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">~ sudo rpm -i cuda-repo-rhel7-9-1-local-9.1.85-1.x86_64.rpm</span><br><span class="line">~ sudo yum clean all</span><br><span class="line">~ sudo yum install cuda</span><br></pre></td></tr></table></figure>
-<p>不过安装完后有各种启动问题。所以先不安装cuda。安装完后cuda的配置见步骤2.</p>
-</li>
-</ul>
-</li>
-<li><p>配置环境变量。<br> 因为我是用zsh， so编辑在～/.zshrc中增加如下内容：</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#gpu driver  </span><br><span class="line">export CUDA_HOME=/usr/local/cuda-9.1  </span><br><span class="line">export PATH=/usr/local/cuda-9.1/bin:$PATH  </span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda-9.1/lib64:$LD_LIBRARY_PATH  </span><br><span class="line">export LD_LIBRARY_PATH=&quot;/usr/local/cuda-9.1/lib:$&#123;LD_LIBRARY_PATH&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>安装tensorflow - Installing with Virtualenv（<a href="">参考tensorflow官网安装流程安装</a>）<br> 我是python2.7的，所以选择2.7的安装， 并且因为机器原因就不安装支持gpu的版本了。</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install python-pip python-dev python-virtualenv # for Python 2.7</span><br><span class="line"></span><br><span class="line">$ virtualenv --system-site-packages targetDirectory # for Python 2.7</span><br><span class="line"></span><br><span class="line">$ source ~/tensorflow/bin/activate # bash, sh, ksh, or zsh</span><br><span class="line"></span><br><span class="line">(tensorflow)$ easy_install -U pip</span><br><span class="line"></span><br><span class="line">(tensorflow)$ pip install --upgrade tensorflow  # for Python 2.7</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>验证安装<br>如何验证呢，自然是虚拟环境中运行一段tensorflow的程序啦<br>因为时在virutalenv环境下，安装完tensorflow后记得要更新以下环境。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(tensorflow)$ source ./bin/activate</span><br><span class="line">(tensorflow)$ python</span><br><span class="line"></span><br><span class="line"># Enter the following short program inside the python interactive shell:</span><br><span class="line">&gt;&gt;&gt; import tensorflow as tf</span><br><span class="line">&gt;&gt;&gt; hello = tf.constant(&apos;Hello, TensorFlow!&apos;)</span><br><span class="line">&gt;&gt;&gt; sess = tf.Session()</span><br><span class="line">&gt;&gt;&gt; print(sess.run(hello))</span><br><span class="line"></span><br><span class="line"># 输出</span><br><span class="line">Hello, TensorFlow!</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>因为自己机器的cpu型号比较老，所以在import tensorflow的时候报错误：Illegal instruction (core dumped)。<br>google一番后发现这个问题很多人都碰到了，将级到tensorflow1.5可以运行。那么也降级安装1.5版本的tensorflow吧。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pip uninstall tensorflow</span><br><span class="line">$ pip install tensorflow==1.5</span><br></pre></td></tr></table></figure>
-<p>done!<br>实际上即便是1.5的版本，tensorflow可以执行，但是warnning：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2</span><br></pre></td></tr></table></figure></p>
-<p>可以手动编译可以根据自己机器的匹配进行配置，提高tensorflow的效率，后面再仔细研究以下tensorflow的编译吧。目前的任务是学习tensorflow来解决数学问题。</p>
-<ol start="4">
-<li>然后就可以开始使用tensorflow进行机器学习的相关开发啦。</li>
-</ol>
-<p>补充介绍：</p>
-<ul>
-<li>[virtualenv]python中的第三方包，用来管理python虚拟环境的的方法之一，它通过创建虚拟而独立的python环境，使每个项目的环境与其他项目环境独立开来，保证各自环境的干净，避免包冲突的问题。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// create virtual env</span><br><span class="line">$ virtualenv targetDir                              //targetDir 虚拟环境名称</span><br><span class="line">$ virtualenv ---system-site-packages targetDir      //创建时使用系统环境</span><br><span class="line">$ virtualenv -p /usr/bin/python2.7 targetDir        //还可以指定虚拟环境中python的版本</span><br><span class="line">$ cd targetDir                                      //进入虚拟环境</span><br><span class="line">$ source bin/activate                               //启动虚拟环境</span><br><span class="line">$ deactivate                                        //退出虚拟环境</span><br><span class="line">$ cd .. &amp; rm targetDir                              //删除虚拟环境</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/29/Tensorflow：Install-on-centOS-7/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Javascript-ES6中的for-of循环" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/29/Javascript-ES6中的for-of循环/">Javascript ES6中的for-of</a>
-    </h1>
-  
-
-        
-        <a href="/2018/03/29/Javascript-ES6中的for-of循环/" class="archive-article-date">
-  	<time datetime="2018-03-29T14:04:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-29</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="JS中如何遍历数组"><a href="#JS中如何遍历数组" class="headerlink" title="JS中如何遍历数组?"></a>JS中如何遍历数组?</h3><p>在es5中,可以使用Array内建的方法: Array.forEach<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">myArray.forEach(function (value) &#123;</span><br><span class="line">  console.log(value);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
-<p>该方法好处是代码看起来简洁.但也存在着缺陷:</p>
-<ul>
-<li>不能使用break语句中断循环，</li>
-<li>不能使用return语句返回到外层函数。</li>
-</ul>
-<h3 id="for-in方法"><a href="#for-in方法" class="headerlink" title="for - in方法:"></a>for - in方法:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for(var index in myArray) &#123;</span><br><span class="line">  console.log(myArray[index]);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>需要注意,for-in是为普通对象设计的，不适用于数组遍历。它有以下特点:</p>
-<ul>
-<li>赋给index的值不是实际的数字，而是字符串“0”、“1”、“2”;</li>
-<li>作用于数组的for-in循环体除了遍历数组元素外，还会遍历自定义属性。举个例子，如果你的数组中有一个可枚举属性myArray.name，循环将额外执行一次，遍历到名为“name”的索引。就连数组原型链上的属性都能被访问到。</li>
-<li>在某些情况下，这段代码可能按照随机顺序遍历数组元素</li>
-</ul>
-<h3 id="for-of方法"><a href="#for-of方法" class="headerlink" title="for - of方法:"></a>for - of方法:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for(var index of myArray) &#123;</span><br><span class="line">  console.log(myArray[index]);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>这时ES6中最简洁、最直接的遍历数组元素(值)的语法</p>
-<ul>
-<li>这个方法避开了for-in循环的所有缺陷</li>
-<li>与forEach()不同的是，它可以正确响应break、continue和return语句</li>
-</ul>
-<p>强大的 for - of,不仅支持数组，可以遍历其它的集合;</p>
-<ul>
-<li>大多数类数组对象，例如DOM NodeList对象</li>
-<li><p>支持字符串遍历，它将字符串视为一系列的Unicode字符来进行遍历：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (var chr of &quot;&quot;) &#123;</span><br><span class="line">    console.log(chr); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>支持Map和Set对象遍历。Map和set也是Es6中的新增的类型.</p>
-</li>
-<li><p>Set对象类似于数组，但是成员的值都是唯一的，没有重复的值。可以用一个数组来创建set对象.具体关于Set可以<a href="http://es6.ruanyifeng.com/#docs/set-map" target="_blank" rel="noopener">参考</a>.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var setNumber = new Set([1, 2, 3, 4, 1, 2,3]);</span><br><span class="line">// 1, 2, 3, 4</span><br><span class="line">for (var value of setNumber) &#123;</span><br><span class="line">    console.log(value);</span><br><span class="line">&#125; // 1 2 3 4</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Map对象稍有不同：内含的数据由键值对组成，所以你需要使用解构（destructuring）来将键值对拆解为两个独立的变量：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (var [key, value] of keyMap) &#123;</span><br><span class="line">    console.log(key + &quot; is: &quot; + value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/29/Javascript-ES6中的for-of循环/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-VIM简明教程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/25/VIM简明教程/">VIM简明教程</a>
-    </h1>
-  
-
-        
-        <a href="/2018/03/25/VIM简明教程/" class="archive-article-date">
-  	<time datetime="2018-03-25T14:20:45.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-25</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Vim-tutorial"><a href="#Vim-tutorial" class="headerlink" title="Vim tutorial"></a>Vim tutorial</h2><p>vim is editor in linux. There are three mode for vim: normal ,insert and visual.<br>Here records the basic operator of this editor.</p>
-<h3 id="normal-navigate-and-manipulate-text"><a href="#normal-navigate-and-manipulate-text" class="headerlink" title="normal: navigate and manipulate text"></a>normal: navigate and manipulate text</h3><ul>
-<li>‘ESC’ for switch to normal mode</li>
-<li><p>navigate keys:</p>
-<ul>
-<li>basic movement: h(left),j(down), k(up), l(right)</li>
-<li>word movement: w(start of word), e(end of word), b(beginning of word), youcan also use number to powered the movement, eg:’3b’ - move to the end of the third word </li>
-<li>insert text repeatedly: symtax: (num)i(text), eg: ‘3iYes’ means insert 3 Yes to the text.</li>
-<li>find the charactor in the line：f or F, eg:’fa’ means find ‘a’ in next, ‘3fa’ - find the third ‘a’ following.</li>
-<li>find the matching bracket or parenthese ‘{‘, or ‘[‘ or ‘(‘, with ‘%’</li>
-<li>‘0’ and ‘$’ means go to the begin/end of a line</li>
-<li>‘*’ to find the next occurence of the same word under cursor. ‘#’ to find the previous one.</li>
-<li>‘gg’ takes you goto the beginning of the file and with ‘G’ to the end line . goto the specified line using ‘#{number}G’, eg: 5G - jump to the 5th line.</li>
-<li>text research: ‘/#{target}’ to search target in text. ‘n’ and ‘N’ means next and previous respectively.</li>
-<li>insert new line: ‘o’ and ‘O’ means insert new line after/before current line. After insert the mode will change to insert mode. </li>
-<li>delete a charactor with ‘x’ or ‘X’</li>
-<li>replace letter under cursor with ‘r’</li>
-<li>delete command: ‘d’, you can combined ‘d’ with movement. ‘dw’ delete the word on the under of the cursor. ‘d#{num}e/b’ means delete the num word before/after cursor.</li>
-<li>repetition with ‘.’ you can execute some command repeatly with ‘.’</li>
-<li>recover with ‘u’ or ‘ctrl+R’</li>
-<li>import command to remember: ‘:w’ - save; ‘:q’ - quit; ‘:q!’ - quit without save</li>
-<li>search help with ‘:help’ when using vim</li>
-</ul>
-</li>
-</ul>
-<h3 id="Visual"><a href="#Visual" class="headerlink" title="Visual"></a>Visual</h3><ul>
-<li>‘v’ - switch to visual mode</li>
-<li>you can select text in visual mode and then decide what to do.</li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/25/VIM简明教程/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-谈谈Assic-UTF-8和Unicode" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/21/谈谈Assic-UTF-8和Unicode/">谈谈Assic,UTF-8和Unicode</a>
-    </h1>
-  
-
-        
-        <a href="/2018/03/21/谈谈Assic-UTF-8和Unicode/" class="archive-article-date">
-  	<time datetime="2018-03-21T14:30:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-21</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>ASCII编码是1个字节<br>Unicode编码通常是2个字节<br>UTF-8编码把一个Unicode字符根据不同的数字大小编码成1-6个字节，常用的英文字母被编码成1个字节，汉字通常是3个字节，只有很生僻的字符才会被编码成4-6个字节；</p>
-<table>
-<thead>
-<tr>
-<th>字符</th>
-<th style="text-align:center">ASCII</th>
-<th style="text-align:center">Unicode</th>
-<th style="text-align:right">UTF-8</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A</td>
-<td style="text-align:center">01000001</td>
-<td style="text-align:center">00000000 01000001</td>
-<td style="text-align:right">01000001</td>
-</tr>
-<tr>
-<td>中</td>
-<td style="text-align:center">x</td>
-<td style="text-align:center">01001110 00101101</td>
-<td style="text-align:right">11100100 10111000 10101101</td>
-</tr>
-</tbody>
-</table>
-<p>现在计算机系统通用的字符编码工作方式：</p>
-<p>在计算机内存中，统一使用Unicode编码，当需要保存到硬盘或者需要传输的时候，就转换为UTF-8编码。</p>
-<p>用记事本编辑的时候，从文件读取的UTF-8字符被转换为Unicode字符到内存里，编辑完成后，保存的时候再把Unicode转换为UTF-8保存到文件：</p>
-<p><img src="https://www.liaoxuefeng.com/files/attachments/001387245992536e2ba28125cf04f5c8985dbc94a02245e000/0" alt=""><br>浏览网页时,服务器会先把动态生成的UNICODE转换成UTF-8在传输到浏览器：<br><img src="https://www.liaoxuefeng.com/files/attachments/001387245979827634fd6204f9346a1ae6358d9ed051666000/0" alt=""></p>
-<p>所以你看到很多网页的源码上会有类似<code>&lt;meta charset=&quot;UTF-8&quot; /&gt;</code>的信息，表示该网页正是用的UTF-8编码。</p>
-<p><strong>本文主要参考廖雪峰Python教程</strong></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/21/谈谈Assic-UTF-8和Unicode/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-使用curl命令操作elasticsearch的语法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/11/使用curl命令操作elasticsearch的语法/">使用curl命令操作elasticsearch的语法</a>
-    </h1>
-  
-
-        
-        <a href="/2018/03/11/使用curl命令操作elasticsearch的语法/" class="archive-article-date">
-  	<time datetime="2018-03-11T14:26:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-11</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Insert"><a href="#Insert" class="headerlink" title="Insert:"></a>Insert:</h2><h4 id="Syntax-1-with-docId"><a href="#Syntax-1-with-docId" class="headerlink" title="Syntax 1(with docId):"></a>Syntax 1(with docId):</h4><blockquote>
-<p>curl -XPUT ‘<a href="http://esHost:9200/indexName/typeName/docId&#39;" target="_blank" rel="noopener">http://esHost:9200/indexName/typeName/docId&#39;</a> -d ‘JSONData’</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT &apos;http://localhost:9200/admins/admin/123&apos; -d &apos;&#123;</span><br><span class="line">  &quot;name&quot; : &quot;Arun Thundyill Saseendran&quot;,</span><br><span class="line">  &quot;email&quot; : &quot;200900&quot;,      </span><br><span class="line">  &quot;phone&quot; : &quot;1297497&quot;, </span><br><span class="line">  &quot;password&quot;: &quot;8-0854200&quot;,</span><br><span class="line">  &quot;type&quot;:&quot;super&quot;</span><br><span class="line">&#125;&apos;</span><br></pre></td></tr></table></figure>
-<p>result:</p>
-<blockquote>
-<p>{“_index”:”admins_4”,”_type”:”admin”,”_id”:”1”,”_version”:1,”created”:true}</p>
-</blockquote>
-<h4 id="Syntax-2-without-docId"><a href="#Syntax-2-without-docId" class="headerlink" title="Syntax 2(without docId):"></a>Syntax 2(without docId):</h4><blockquote>
-<p>curl -X POST -H “Content-Type: application/json” -H “Cache-Control: no-cache” -d ‘JSONData’ ‘<a href="http://esHost:9200/indexName/typeName/&#39;" target="_blank" rel="noopener">http://esHost:9200/indexName/typeName/&#39;</a></p>
-</blockquote>
-<h2 id="Search"><a href="#Search" class="headerlink" title="Search:"></a>Search:</h2><p>There are two method for searching:</p>
-<h3 id="URI"><a href="#URI" class="headerlink" title="URI"></a>URI</h3><h4 id="Syntax"><a href="#Syntax" class="headerlink" title="Syntax:"></a>Syntax:</h4><blockquote>
-<p>curl -XGET ‘<a href="http://esHost:9200/indexName/typeName/_search?q={filter}&#39;" target="_blank" rel="noopener">http://esHost:9200/indexName/typeName/_search?q={filter}&#39;</a></p>
-</blockquote>
-<h3 id="Request-Body"><a href="#Request-Body" class="headerlink" title="Request Body"></a>Request Body</h3><blockquote>
-<p>curl -XGET ‘<a href="http://esHost:9200/indexName/typeName/_search&#39;" target="_blank" rel="noopener">http://esHost:9200/indexName/typeName/_search&#39;</a> -d ‘{<br> “query”: {<br>   “term”:{filed_name:search_value}<br> }<br>}’<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">curl -XGET &apos;localhost:9200/pc_web/command/_search?pretty&apos; -d &apos;&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;filtered&quot;: &#123;</span><br><span class="line">      &quot;filter&quot;: &#123;</span><br><span class="line">        &quot;and&quot;:&#123; </span><br><span class="line">          &quot;filters&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">              &quot;terms&quot;: &#123;&quot;client_id&quot;:[&quot;_yXgPHq2XkEZ&quot;]&#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">              &quot;terms&quot;:&#123;&quot;state&quot;: [&quot;init&quot;]&#125;</span><br><span class="line">            &#125;</span><br><span class="line">          ]</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;size&quot;:65535</span><br><span class="line">&#125;&apos;</span><br></pre></td></tr></table></figure></p>
-</blockquote>
-<p>创建存储数据：<br>curl -XPOST -H “Content-Type: application/json” -H “Cache-Control: no-cache” -d ‘{<br>  “parent”: “1”,<br>  “client_id”: “-yXgPHq2XkEZ”,<br>  “task_type”: “normal_scan”,<br>  “params”: {},<br>  “state”: “init”,<br>  “creation_time”:1465373344,<br>  “progress”: 0,<br>  “sent_count”: 0,<br>  “debug_message”: “no error”<br>}<br>‘ ‘<a href="http://localhost:9200/pc_web/command/&#39;" target="_blank" rel="noopener">http://localhost:9200/pc_web/command/&#39;</a></p>
-<p>删除指定的INDEX（database）的数据：</p>
-<blockquote>
-<p>curl -XDELETE ‘localhost:9200/index/type/document’</p>
-</blockquote>
-<p>删除制定的index：</p>
-<blockquote>
-<p>curl -XDELETE <a href="http://localhost:9200/index" target="_blank" rel="noopener">http://localhost:9200/index</a></p>
-</blockquote>
-<p>删除制定的type的数据：</p>
-<blockquote>
-<p>curl -XDELETE <a href="http://localhost:9200/index/type" target="_blank" rel="noopener">http://localhost:9200/index/type</a></p>
-</blockquote>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/11/使用curl命令操作elasticsearch的语法/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -1229,7 +1265,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2018 alex lu
+    		&copy; 2019 alex lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

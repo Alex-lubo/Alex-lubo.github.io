@@ -156,6 +156,489 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-端口映射" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/05/端口映射/">端口映射</a>
+    </h1>
+  
+
+        
+        <a href="/2018/01/05/端口映射/" class="archive-article-date">
+  	<time datetime="2018-01-05T14:18:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-05</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="内网用户要上internet，就需要端口映射；"><a href="#内网用户要上internet，就需要端口映射；" class="headerlink" title="内网用户要上internet，就需要端口映射；"></a>内网用户要上internet，就需要端口映射；</h2><ol>
+<li>动态，NAT网络</li>
+<li>静态</li>
+</ol>
+<h2 id="端口映射的原理"><a href="#端口映射的原理" class="headerlink" title="端口映射的原理"></a>端口映射的原理</h2><p>就是将外网主机的IP地址的一个端口映射到内网中一台机器，提供相应的服务。当用户访问该IP的这个端口时，服务器自动将请求映射到对应局域网内部的机器上。常见方法：</p>
+<ol>
+<li>在路由器上做端口映射（虚拟服务器），将内网机器映射到外网， 从而实现在互联网上访问局域网内部机器的特定端口服务。<br>应用条件： 网关的公网ip不能是NAT后的局域网地址</li>
+<li>通过软件将本地服务映射到web网站，然后web网站负责将提供域名将你的服务发布，这样通过访问分配的域名来访问你的内网服务。如nat123<br>应用条件： 安装域名分布网站的客户端程序，</li>
+<li>ngrok内网穿透、<br>应用条件： 需要域名、公网ip的服务器<br>4.ssh内网穿透<br>应用条件： 公网ip的服务器<br>5.n2n内网穿透</li>
+</ol>
+<p>6.花生壳内网穿透</p>
+<h2 id="SSH端口转发"><a href="#SSH端口转发" class="headerlink" title="SSH端口转发"></a>SSH端口转发</h2><p>参考：<br><a href="https://blog.fundebug.com/2017/04/24/ssh-port-forwarding/" target="_blank" rel="noopener">https://blog.fundebug.com/2017/04/24/ssh-port-forwarding/</a><br><a href="http://blog.creke.net/722.html" target="_blank" rel="noopener">http://blog.creke.net/722.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/01/05/端口映射/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-learn-python-excellent-materials" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/21/learn-python-excellent-materials/">learn python - excellent materials.md</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/21/learn-python-excellent-materials/" class="archive-article-date">
+  	<time datetime="2017-11-21T14:51:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>You can get a lot of learing materials about python. The list belowing contains the resource that pull over me a lot, so i note them for mem.</p>
+<ul>
+<li>CS231n课程笔记翻译：Python Numpy教程: <a href="https://zhuanlan.zhihu.com/p/20878530" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/20878530</a></li>
+</ul>
+<p>按理说运行下面一句就可以安装了<br><code>pip install matplotlib</code><br>但是对于我的redhat7.2+python2.7.5，报了下面的错误</p>
+<blockquote>
+<p>_posixsubprocess.c:3:20: 致命错误：Python.h：没有那个文件或目录</p>
+</blockquote>
+<p>于是需要先安装python-devel</p>
+<p><code>sudo yum install python-devel</code></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/21/learn-python-excellent-materials/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-install-nvm-for-all-user-in-linux" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/21/install-nvm-for-all-user-in-linux/">install nvm for all user in linux</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/21/install-nvm-for-all-user-in-linux/" class="archive-article-date">
+  	<time datetime="2017-11-21T14:16:22.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>install nvm for all users:</p>
+<ol>
+<li><p>Installed nvm in /opt/nvm as root. Seemed like an appropriate location.</p>
+<pre><code># git clone git@github.com:creationix/nvm.git /opt/nvm
+</code></pre></li>
+<li><p>Created the directory /usr/local/nvm. This is where the downloads will go ($NVM_DIR)</p>
+<pre><code># mkdir /usr/local/nvm
+</code></pre></li>
+<li><p>Create the directory /usr/local/node. This is where the NPM global stuff will go:</p>
+<pre><code># mkdir /usr/local/node
+</code></pre></li>
+<li><p>Created a file called nvm.sh in /etc/profile.d with the following contents:</p>
+<pre><code>export NVM_DIR=/usr/local/nvm
+source /opt/nvm/nvm.sh
+
+export NPM_CONFIG_PREFIX=/usr/local/node
+export PATH=&quot;/usr/local/node/bin:$PATH&quot;
+</code></pre></li>
+<li><p>load nvm env</p>
+<pre><code># source /etc/profile.d/nvm.sh
+</code></pre></li>
+<li><p>Re-login to a shell session, then set the default node version.</p>
+<pre><code># nvm ls-remote
+# nvm install 0.10
+# nvm alias default 0.10
+</code></pre></li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">node.js</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/21/install-nvm-for-all-user-in-linux/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS7-upgrade-glibc" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/CentOS7-upgrade-glibc/">CentOS7 upgrade glibc</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/16/CentOS7-upgrade-glibc/" class="archive-article-date">
+  	<time datetime="2017-11-16T14:53:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近电脑更新时老是更新失败，看提示信息说是升级需要安装glibc-2.17.196**之类的提示，查询之后发现需要升级个glibc。<br>通过以下命令查询本机已经安装版本：<br><code>rpm -qa | grep glibc</code><br>可以看到本机安装版本为：</p>
+<blockquote>
+<p>glibc-2.17-196.el7_3.1.x86_64<br>glibc-devel-2.17-196.el7_3.1.x86_64<br>glibc-headers-2.17-196.el7_3.1.x86_64<br>glibc-common-2.17-196.el7_3.1.x86_64</p>
+</blockquote>
+<p>得知系统中安装了 x86_64 的 glibc、glibc-common、glibc-devel、glibc-headers，并且版本是 2.17-192.el7_3，所以升级时我们要下载新版本的以上 4 种 RPM 包。接下来，可以在 ftp.redsleeve.org、rpmfind.net(x86_64) 或百毒云下载相应版本的 RPM 包，注意只能用在 el7 发行版中.<br>然后将安装包放置在某文件夹下，输入以下命令：<br><code>sudo rpm -Uvh glibc-*</code><br>即可完成更新，然后update下系统，就可以更新系统了。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/16/CentOS7-upgrade-glibc/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Mechine-Learning-prepare" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/08/Mechine-Learning-prepare/">Mechine Learning - prepare</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/08/Mechine-Learning-prepare/" class="archive-article-date">
+  	<time datetime="2017-11-08T15:30:14.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>做个计划，准备系统的学习一下机器学习。理由有三：</p>
+<ol>
+<li>将人类的认知和思考能力“教”给机器，就像让机器替代人类从是繁重的体力劳动一样，这是算是“第二次机器革命”。机器学习是未来的一个方向，而且很有兴趣；</li>
+<li>自身有一定的数学基础和编程基础；</li>
+<li>挑战一下自己，给自己压力，借着学习的机会加强自己的自学能力和自制能力；</li>
+</ol>
+<p>之前零散的看过一些机器学习的概念，结合自身工作学习经历，尤其是研究生期间毕业论文就是做的采用人工神经网络来自动识别油水层，而且之前也做过HARI阵列成像测井仪器测井资料的正反演，采用的阻尼最小二乘法做的，通过计算模型计算值与实际测量值之间最小误差来确定最佳模型，然后根据模型给出地层模型，以方便测井解释人员对资料进行解释；有这些经历，然后通过一段实践的自学，进阶机器学习是不成问题的。</p>
+<p>个人理解，所有的知识都是在大脑中与外在世界形成的映射关系，学习的过程则是建立这种映射关系的过程，比如我们知道一支笔的样子，然后大脑会记住它的特征，当下次再看到时根据之前的映射关系知道它是一支笔…</p>
+<p>目前知道机器学习分为三种： </p>
+<ul>
+<li>监督学习</li>
+<li>无监督学</li>
+<li>强化学习</li>
+</ul>
+<p>虽然懂得概念，但是“纸上得来终觉浅，须知此事要躬行”，如何用计算机实现，掌握熟练的技能，将知识转化成工业价值，这是我需要努力实践的地方。</p>
+<p>计划采用python来实践这些机器学习的方法。同时也要加强数学基础的巩固和提高。<br>目前准备的资料有：</p>
+<ul>
+<li><p>python学习资料</p>
+<ul>
+<li><a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000" target="_blank" rel="noopener">廖雪峰python教程</a></li>
+<li>电子书：机器学习-使用python</li>
+</ul>
+</li>
+<li><p>理论提高</p>
+<ul>
+<li><a href="http://speech.ee.ntu.edu.tw/~tlkagk/index.html" target="_blank" rel="noopener">台湾大学<strong>李宏毅</strong>教授的课程</a></li>
+<li><a href="http://open.163.com/special/opencourse/machinelearning.html" target="_blank" rel="noopener">Andrew Ng 课程</a></li>
+</ul>
+</li>
+</ul>
+<p>计划一个月时间学完python，能够开始实践机器学习的内容。并坚持在博客中每周写一些读书笔记。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/08/Mechine-Learning-prepare/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS-7-安装NTFS支持" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/08/CentOS-7-安装NTFS支持/">CentOS 7 安装NTFS支持</a>
+    </h1>
+  
+
+        
+        <a href="/2017/11/08/CentOS-7-安装NTFS支持/" class="archive-article-date">
+  	<time datetime="2017-11-08T15:24:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-08</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>1.安装NTFS-3G<br>2.挂载</p>
+<blockquote>
+<p><code># mount -t ntfs-3g /dev/sda1 /mnt/winC</code><br><code># mount -t ntfs-3g /dev/sda2 /mnt/winD</code><br><code># mount -t ntfs-3g /dev/sda5 /mnt/winE</code></p>
+</blockquote>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/08/CentOS-7-安装NTFS支持/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-CentOS-7-安装NVIDIA驱动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -379,7 +862,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2018 alex lu
+    		&copy; 2019 alex lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
